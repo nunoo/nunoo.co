@@ -1,4 +1,5 @@
 # nunoo.co
+[![Netlify Status](https://api.netlify.com/api/v1/badges/a89b2158-74ec-4c59-b97a-2395cbbd06b4/deploy-status)](https://app.netlify.com/sites/nunoo/deploys)
 
 ## Getting started
 
