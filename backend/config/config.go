@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/spf13/viper"
@@ -43,6 +44,7 @@ func Load() (*Config, error) {
 	viper.AddConfigPath("./config")
 	
 	viper.AutomaticEnv()
+	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 
 	// Default values
 	viper.SetDefault("server.port", "8080")
