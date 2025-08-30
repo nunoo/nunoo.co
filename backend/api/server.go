@@ -21,6 +21,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"golang.org/x/crypto/argon2"
+	"nunoo.co/backend/api/routes"
 	"nunoo.co/backend/config"
 	"nunoo.co/backend/migrations"
 	"nunoo.co/backend/models"
@@ -153,19 +154,17 @@ func (s *Server) routes() {
 		MaxAge:           300,
 	}))
 
-    s.r.Get("/health", func(w http.ResponseWriter, r *http.Request) { writeJSON(w, http.StatusOK, map[string]string{"status": "ok"}) })
+    routes.RegisterHealthRoutes(s.r)
 
-    // Auth endpoints via chi (kept for backward compatibility)
-    s.r.Route("/auth", func(r chi.Router) {
-        r.Post("/register", s.handleRegister)
-        r.Post("/login", s.handleLogin)
-        r.Post("/refresh", s.handleRefresh)
+    routes.RegisterAuthRoutes(s.r, routes.AuthHandlers{
+        Register: s.handleRegister,
+        Login:    s.handleLogin,
+        Refresh:  s.handleRefresh,
     })
 
-    // Protected route
-    s.r.Group(func(r chi.Router) {
-        r.Use(s.authMiddleware)
-        r.Get("/me", s.handleMe)
+    routes.RegisterProtectedRoutes(s.r, routes.Protected{
+        Me:             s.handleMe,
+        AuthMiddleware: s.authMiddleware,
     })
 
     // Mount Huma for OpenAPI + Swagger over the router
