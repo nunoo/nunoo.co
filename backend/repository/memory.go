@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"context"
 	"errors"
 	"strings"
 	"sync"
@@ -15,9 +16,9 @@ var (
 
 // UserRepository defines storage operations for users.
 type UserRepository interface {
-	Create(u *models.User) error
-	GetByEmail(email string) (*models.User, error)
-	GetByID(id string) (*models.User, error)
+	Create(ctx context.Context, u *models.User) error
+	GetByEmail(ctx context.Context, email string) (*models.User, error)
+	GetByID(ctx context.Context, id string) (*models.User, error)
 }
 
 // MemoryUserRepo is an in-memory implementation suitable for tests and dev.
@@ -36,7 +37,14 @@ func NewMemoryUserRepo() *MemoryUserRepo {
 
 func normalizeEmail(e string) string { return strings.ToLower(strings.TrimSpace(e)) }
 
-func (r *MemoryUserRepo) Create(u *models.User) error {
+func (r *MemoryUserRepo) Create(ctx context.Context, u *models.User) error {
+	// Check if context is cancelled
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	default:
+	}
+	
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	e := normalizeEmail(u.Email)
@@ -48,7 +56,14 @@ func (r *MemoryUserRepo) Create(u *models.User) error {
 	return nil
 }
 
-func (r *MemoryUserRepo) GetByEmail(email string) (*models.User, error) {
+func (r *MemoryUserRepo) GetByEmail(ctx context.Context, email string) (*models.User, error) {
+	// Check if context is cancelled
+	select {
+	case <-ctx.Done():
+		return nil, ctx.Err()
+	default:
+	}
+	
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 	u, ok := r.byEmail[normalizeEmail(email)]
@@ -58,7 +73,14 @@ func (r *MemoryUserRepo) GetByEmail(email string) (*models.User, error) {
 	return u, nil
 }
 
-func (r *MemoryUserRepo) GetByID(id string) (*models.User, error) {
+func (r *MemoryUserRepo) GetByID(ctx context.Context, id string) (*models.User, error) {
+	// Check if context is cancelled
+	select {
+	case <-ctx.Done():
+		return nil, ctx.Err()
+	default:
+	}
+	
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 	u, ok := r.byID[id]

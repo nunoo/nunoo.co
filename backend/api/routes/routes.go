@@ -21,12 +21,8 @@ type Protected struct {
 }
 
 // RegisterHealthRoutes registers the health endpoint.
-func RegisterHealthRoutes(r chi.Router) {
-	r.Get("/health", func(w http.ResponseWriter, _ *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
-		_, _ = w.Write([]byte(`{"status":"ok"}`))
-	})
+func RegisterHealthRoutes(r chi.Router, healthHandler http.HandlerFunc) {
+	r.Get("/health", healthHandler)
 }
 
 // RegisterAuthRoutes registers the /auth endpoints.

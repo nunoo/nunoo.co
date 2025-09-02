@@ -20,11 +20,13 @@ type PostgresUserRepo struct {
 
 func NewPostgresUserRepo(db *sql.DB) *PostgresUserRepo { return &PostgresUserRepo{db: db} }
 
-func (r *PostgresUserRepo) Create(u *models.User) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+func (r *PostgresUserRepo) Create(ctx context.Context, u *models.User) error {
+	// Use provided context with fallback timeout
+	queryCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
+	
 	q := `INSERT INTO users (id, email, password_hash, created_at) VALUES ($1, $2, $3, $4)`
-	_, err := r.db.ExecContext(ctx, q, u.ID, NormalizeEmail(u.Email), u.PasswordHash, u.CreatedAt.UTC())
+	_, err := r.db.ExecContext(queryCtx, q, u.ID, NormalizeEmail(u.Email), u.PasswordHash, u.CreatedAt.UTC())
 	if err != nil {
 		// Unique violation code for Postgres is 23505; but to avoid importing pgx errors specifics, map any duplicate email error by string contains
 		if isUniqueViolation(err) {
@@ -35,11 +37,13 @@ func (r *PostgresUserRepo) Create(u *models.User) error {
 	return nil
 }
 
-func (r *PostgresUserRepo) GetByEmail(email string) (*models.User, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+func (r *PostgresUserRepo) GetByEmail(ctx context.Context, email string) (*models.User, error) {
+	// Use provided context with fallback timeout
+	queryCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
+	
 	q := `SELECT id, email, password_hash, created_at FROM users WHERE email=$1`
-	row := r.db.QueryRowContext(ctx, q, NormalizeEmail(email))
+	row := r.db.QueryRowContext(queryCtx, q, NormalizeEmail(email))
 	u := new(models.User)
 	if err := row.Scan(&u.ID, &u.Email, &u.PasswordHash, &u.CreatedAt); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -50,11 +54,13 @@ func (r *PostgresUserRepo) GetByEmail(email string) (*models.User, error) {
 	return u, nil
 }
 
-func (r *PostgresUserRepo) GetByID(id string) (*models.User, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+func (r *PostgresUserRepo) GetByID(ctx context.Context, id string) (*models.User, error) {
+	// Use provided context with fallback timeout
+	queryCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
+	
 	q := `SELECT id, email, password_hash, created_at FROM users WHERE id=$1`
-	row := r.db.QueryRowContext(ctx, q, id)
+	row := r.db.QueryRowContext(queryCtx, q, id)
 	u := new(models.User)
 	if err := row.Scan(&u.ID, &u.Email, &u.PasswordHash, &u.CreatedAt); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {

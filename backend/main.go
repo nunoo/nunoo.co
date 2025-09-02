@@ -15,7 +15,17 @@ import (
 )
 
 func main() {
-	logger, _ := zap.NewProduction()
+	// Enhanced logging configuration for production
+	logConfig := zap.NewProductionConfig()
+	logConfig.OutputPaths = []string{"stdout"}
+	logConfig.ErrorOutputPaths = []string{"stderr"}
+	logConfig.DisableStacktrace = false
+	logConfig.Level = zap.NewAtomicLevelAt(zap.InfoLevel)
+	
+	logger, err := logConfig.Build(zap.AddCaller(), zap.AddCallerSkip(1))
+	if err != nil {
+		panic(err)
+	}
 	defer logger.Sync()
 
 	cfg, err := config.Load()
@@ -33,9 +43,11 @@ func main() {
 	srv := &http.Server{
 		Addr:         ":" + port,
 		Handler:      h,
-		ReadTimeout:  durationOrDefault(cfg.Server.ReadTimeout, 15*time.Second),
-		WriteTimeout: durationOrDefault(cfg.Server.WriteTimeout, 15*time.Second),
-		IdleTimeout:  durationOrDefault(cfg.Server.IdleTimeout, 60*time.Second),
+		ReadTimeout:  durationOrDefault(cfg.Server.ReadTimeout, 10*time.Second),    // Shorter for better resource usage
+		WriteTimeout: durationOrDefault(cfg.Server.WriteTimeout, 10*time.Second),   // Shorter for better resource usage
+		IdleTimeout:  durationOrDefault(cfg.Server.IdleTimeout, 120*time.Second),   // Longer for HTTP/2 efficiency
+		ReadHeaderTimeout: 5 * time.Second,                                          // Added protection against slow loris attacks
+		MaxHeaderBytes:    1 << 20,                                                  // 1MB header limit
 	}
 
 	serverCtx, serverStopCtx := context.WithCancel(context.Background())
@@ -45,7 +57,8 @@ func main() {
 	go func() {
 		<-sig
 
-		shutdownCtx, _ := context.WithTimeout(serverCtx, 30*time.Second)
+		shutdownCtx, shutdownCancel := context.WithTimeout(serverCtx, 30*time.Second)
+		defer shutdownCancel()
 		go func() {
 			<-shutdownCtx.Done()
 			if shutdownCtx.Err() == context.DeadlineExceeded {

@@ -23,7 +23,9 @@ import (
 	"golang.org/x/crypto/argon2"
 	"nunoo.co/backend/api/routes"
 	"nunoo.co/backend/config"
+	"nunoo.co/backend/handlers"
 	"nunoo.co/backend/migrations"
+	custommiddleware "nunoo.co/backend/middleware"
 	"nunoo.co/backend/models"
 	"nunoo.co/backend/repository"
 )
@@ -38,6 +40,7 @@ type Server struct {
 	refreshSecret []byte
 	accessTTL     time.Duration
 	refreshTTL    time.Duration
+	healthChecker *handlers.HealthChecker
 }
 
 // ctxKey is the private context key type for user injection
@@ -78,6 +81,7 @@ func NewServerForTesting(cfg *config.Config) http.Handler {
 		refreshSecret: refreshSecret,
 		accessTTL:     accessTTL,
 		refreshTTL:    refreshTTL,
+		healthChecker: handlers.NewHealthChecker(nil),
 	}
 	s.routes()
 	return s.r
@@ -104,9 +108,11 @@ func NewServer(cfg *config.Config) http.Handler {
 	if err != nil {
 		return h
 	}
-	db.SetMaxOpenConns(10)
-	db.SetMaxIdleConns(5)
-	db.SetConnMaxLifetime(1 * time.Hour)
+	// Optimized connection pool settings for 2025 best practices
+	db.SetMaxOpenConns(25)                  // Increased for better concurrency
+	db.SetMaxIdleConns(10)                  // Higher idle connections for faster response
+	db.SetConnMaxLifetime(30 * time.Minute) // Shorter lifetime for better resource management
+	db.SetConnMaxIdleTime(5 * time.Minute)  // Added idle timeout to prevent stale connections
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -126,6 +132,7 @@ func NewServer(cfg *config.Config) http.Handler {
 		refreshSecret: []byte(cfg.JWT.RefreshSecret),
 		accessTTL:     cfg.JWT.TokenExpiry,
 		refreshTTL:    cfg.JWT.RefreshExpiry,
+		healthChecker: handlers.NewHealthChecker(db),
 	}
 	if len(s.accessSecret) == 0 {
 		s.accessSecret = []byte(os.Getenv("JWT_SECRET"))
@@ -141,20 +148,27 @@ func NewServer(cfg *config.Config) http.Handler {
 }
 
 func (s *Server) routes() {
+	// Core middleware
 	s.r.Use(middleware.RequestID)
 	s.r.Use(middleware.RealIP)
 	s.r.Use(middleware.Logger)
 	s.r.Use(middleware.Recoverer)
+	
+	// Performance and security middleware
+	rateLimiter := custommiddleware.NewRateLimiter(100, 20) // 100 requests per second with burst of 20
+	s.r.Use(rateLimiter.Limit)
+	s.r.Use(custommiddleware.Timeout(30 * time.Second)) // 30 second timeout for all requests
+	s.r.Use(custommiddleware.SecurityHeaders)           // Security headers
 	s.r.Use(cors.Handler(cors.Options{
-		AllowedOrigins:   []string{"https://*", "http://*"},
+		AllowedOrigins:   []string{"https://*", "http://localhost:*"}, // More restrictive for production
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
-		ExposedHeaders:   []string{"Link"},
+		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token", "X-Request-ID"},
+		ExposedHeaders:   []string{"Link", "X-Request-ID"},
 		AllowCredentials: true,
-		MaxAge:           300,
+		MaxAge:           86400, // 24 hours cache for preflight requests
 	}))
 
-    routes.RegisterHealthRoutes(s.r)
+    routes.RegisterHealthRoutes(s.r, s.healthChecker.HealthCheck)
 
     routes.RegisterAuthRoutes(s.r, routes.AuthHandlers{
         Register: s.handleRegister,
@@ -196,7 +210,7 @@ func (s *Server) handleRegister(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// Check if exists
-	if _, err := s.users.GetByEmail(req.Email); err == nil {
+	if _, err := s.users.GetByEmail(r.Context(), req.Email); err == nil {
 		writeError(w, http.StatusConflict, "email already registered")
 		return
 	}
@@ -207,7 +221,7 @@ func (s *Server) handleRegister(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	u := &models.User{ID: id, Email: strings.ToLower(strings.TrimSpace(req.Email)), PasswordHash: hash, CreatedAt: time.Now()}
-	if err := s.users.Create(u); err != nil {
+	if err := s.users.Create(r.Context(), u); err != nil {
 		if errors.Is(err, repository.ErrUserExists) {
 			writeError(w, http.StatusConflict, "email already registered")
 			return
@@ -228,7 +242,7 @@ func (s *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, "validation failed")
 		return
 	}
-	u, err := s.users.GetByEmail(req.Email)
+	u, err := s.users.GetByEmail(r.Context(), req.Email)
 	if err != nil {
 		writeError(w, http.StatusUnauthorized, "invalid credentials")
 		return
@@ -270,7 +284,7 @@ func (s *Server) handleRefresh(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusUnauthorized, "invalid refresh token")
 		return
 	}
-	u, err := s.users.GetByID(claims.Subject)
+	u, err := s.users.GetByID(r.Context(), claims.Subject)
 	if err != nil {
 		writeError(w, http.StatusUnauthorized, "invalid refresh token")
 		return
@@ -314,7 +328,7 @@ func (s *Server) authMiddleware(next http.Handler) http.Handler {
 			writeError(w, http.StatusUnauthorized, "invalid token")
 			return
 		}
-		u, err := s.users.GetByID(claims.Subject)
+		u, err := s.users.GetByID(r.Context(), claims.Subject)
 		if err != nil {
 			writeError(w, http.StatusUnauthorized, "invalid token")
 			return
@@ -363,9 +377,16 @@ func newID() string {
 
 func hashPassword(pw string) (string, error) {
 	salt := randomBytes(16)
-	// Parameters tuned for tests (fast). Adjust for production.
-	h := argon2.IDKey([]byte(pw), salt, 1, 64*1024, 2, 32)
-	return fmt.Sprintf("argon2id$v=19$m=%d,t=%d,p=%d$%s$%s", 64*1024, 1, 2,
+	// Production-ready Argon2id parameters (2025 recommendations)
+	// Memory: 128MB, Time: 3 iterations, Parallelism: 4 threads
+	const (
+		memory      = 128 * 1024 // 128MB
+		iterations  = 3
+		parallelism = 4
+		keyLen      = 32
+	)
+	h := argon2.IDKey([]byte(pw), salt, iterations, memory, parallelism, keyLen)
+	return fmt.Sprintf("argon2id$v=19$m=%d,t=%d,p=%d$%s$%s", memory, iterations, parallelism,
 		base64.RawURLEncoding.EncodeToString(salt), base64.RawURLEncoding.EncodeToString(h)), nil
 }
 
@@ -374,6 +395,13 @@ func verifyPassword(stored, pw string) bool {
 	if len(parts) != 5 {
 		return false
 	}
+	
+	// Parse parameters from stored hash
+	var memory, iterations, parallelism int
+	if _, err := fmt.Sscanf(parts[2], "m=%d,t=%d,p=%d", &memory, &iterations, &parallelism); err != nil {
+		return false
+	}
+	
 	salt, err := base64.RawURLEncoding.DecodeString(parts[3])
 	if err != nil {
 		return false
@@ -382,7 +410,8 @@ func verifyPassword(stored, pw string) bool {
 	if err != nil {
 		return false
 	}
-	h := argon2.IDKey([]byte(pw), salt, 1, 64*1024, 2, uint32(len(expected)))
+	
+	h := argon2.IDKey([]byte(pw), salt, uint32(iterations), uint32(memory), uint8(parallelism), uint32(len(expected)))
 	return constantTimeEqual(expected, h)
 }
 

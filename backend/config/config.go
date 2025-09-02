@@ -12,6 +12,13 @@ type Config struct {
 	Server   ServerConfig
 	Database DatabaseConfig
 	JWT      JWTConfig
+	Security SecurityConfig
+}
+
+type SecurityConfig struct {
+	RateLimitRPS   int `mapstructure:"rate_limit_rps"`
+	RateLimitBurst int `mapstructure:"rate_limit_burst"`
+	RequestTimeout time.Duration `mapstructure:"request_timeout"`
 }
 
 type ServerConfig struct {
@@ -56,6 +63,10 @@ func Load() (*Config, error) {
 	
 	viper.SetDefault("jwt.tokenExpiry", "15m")
 	viper.SetDefault("jwt.refreshExpiry", "72h")
+	
+	viper.SetDefault("security.rateLimitRPS", 100)
+	viper.SetDefault("security.rateLimitBurst", 20)
+	viper.SetDefault("security.requestTimeout", "30s")
 
 	if err := viper.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
