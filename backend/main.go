@@ -21,7 +21,7 @@ func main() {
 	logConfig.ErrorOutputPaths = []string{"stderr"}
 	logConfig.DisableStacktrace = false
 	logConfig.Level = zap.NewAtomicLevelAt(zap.InfoLevel)
-	
+
 	logger, err := logConfig.Build(zap.AddCaller(), zap.AddCallerSkip(1))
 	if err != nil {
 		panic(err)
@@ -41,13 +41,13 @@ func main() {
 	h := api.NewServer(cfg)
 
 	srv := &http.Server{
-		Addr:         ":" + port,
-		Handler:      h,
-		ReadTimeout:  durationOrDefault(cfg.Server.ReadTimeout, 10*time.Second),    // Shorter for better resource usage
-		WriteTimeout: durationOrDefault(cfg.Server.WriteTimeout, 10*time.Second),   // Shorter for better resource usage
-		IdleTimeout:  durationOrDefault(cfg.Server.IdleTimeout, 120*time.Second),   // Longer for HTTP/2 efficiency
-		ReadHeaderTimeout: 5 * time.Second,                                          // Added protection against slow loris attacks
-		MaxHeaderBytes:    1 << 20,                                                  // 1MB header limit
+		Addr:              ":" + port,
+		Handler:           h,
+		ReadTimeout:       durationOrDefault(cfg.Server.ReadTimeout, 10*time.Second),  // Shorter for better resource usage
+		WriteTimeout:      durationOrDefault(cfg.Server.WriteTimeout, 10*time.Second), // Shorter for better resource usage
+		IdleTimeout:       durationOrDefault(cfg.Server.IdleTimeout, 120*time.Second), // Longer for HTTP/2 efficiency
+		ReadHeaderTimeout: 5 * time.Second,                                            // Added protection against slow loris attacks
+		MaxHeaderBytes:    1 << 20,                                                    // 1MB header limit
 	}
 
 	serverCtx, serverStopCtx := context.WithCancel(context.Background())

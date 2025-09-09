@@ -3,7 +3,7 @@
 # Nunoo Backend Server Starter
 # This script generates JWT secrets and starts the server directly
 
-set -e  # Exit on any error
+set -e # Exit on any error
 
 echo "🚀 Starting Nunoo Backend..."
 

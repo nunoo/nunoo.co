@@ -5,17 +5,20 @@ This document outlines the comprehensive performance optimizations and modern be
 ## 🚀 Performance Improvements
 
 ### 1. Database Connection Pool Optimization
+
 - **Increased max open connections**: From 10 to 25 for better concurrency
 - **Optimized idle connections**: From 5 to 10 for faster response times
 - **Reduced connection lifetime**: From 1 hour to 30 minutes for better resource management
 - **Added idle timeout**: 5 minutes to prevent stale connections
 
 ### 2. Enhanced Logging & Observability
+
 - **Structured logging**: Upgraded to production-ready Zap configuration
 - **Request tracing**: Added caller information and stack traces
 - **Enhanced health checks**: Database connectivity monitoring with status reporting
 
 ### 3. Server Configuration Optimizations
+
 - **Optimized timeouts**: Reduced read/write timeouts to 10s for better resource usage
 - **Added security headers**: Protection against common attacks
 - **HTTP/2 efficiency**: Increased idle timeout to 120s
@@ -24,16 +27,19 @@ This document outlines the comprehensive performance optimizations and modern be
 ## 🛡️ Security Enhancements
 
 ### 1. Rate Limiting
+
 - **Per-IP rate limiting**: 100 requests/second with burst of 20
 - **Memory-efficient cleanup**: Automatic visitor cleanup every 5 minutes
 - **Configurable limits**: Environment-based rate limit configuration
 
 ### 2. Request Timeout Protection
+
 - **Global request timeout**: 30-second timeout for all requests
 - **Context-aware cancellation**: Proper handling of cancelled requests
 - **Resource protection**: Prevents hanging requests
 
 ### 3. Security Headers
+
 - **XSS Protection**: X-XSS-Protection header
 - **Content type security**: X-Content-Type-Options
 - **Frame protection**: X-Frame-Options set to DENY
@@ -41,6 +47,7 @@ This document outlines the comprehensive performance optimizations and modern be
 - **HSTS**: HTTP Strict Transport Security for HTTPS enforcement
 
 ### 4. Enhanced Password Security
+
 - **Updated Argon2id parameters**: Production-ready settings (128MB memory, 3 iterations, 4 threads)
 - **Future-proof hashing**: Configurable parameters stored in hash string
 - **Constant-time comparison**: Protection against timing attacks
@@ -48,16 +55,19 @@ This document outlines the comprehensive performance optimizations and modern be
 ## 🔧 Architecture Improvements
 
 ### 1. Context Propagation
+
 - **Request-scoped contexts**: All repository operations now accept context
 - **Cancellation support**: Proper handling of cancelled operations
 - **Timeout inheritance**: Database operations inherit request timeouts
 
 ### 2. Enhanced Error Handling
+
 - **Structured error responses**: Consistent JSON error format
 - **Context-aware errors**: Proper context cancellation handling
 - **Database error mapping**: Improved unique constraint violation detection
 
 ### 3. Middleware Stack
+
 ```go
 // Optimized middleware order for best performance
 s.r.Use(middleware.RequestID)           // Request tracing
@@ -71,6 +81,7 @@ s.r.Use(cors.Handler)                   // CORS handling
 ```
 
 ### 4. Health Check System
+
 - **Database health monitoring**: Real-time database connectivity checks
 - **Service status reporting**: Detailed service health information
 - **Version reporting**: Build version tracking
@@ -79,12 +90,14 @@ s.r.Use(cors.Handler)                   // CORS handling
 ## 📊 Database Optimizations
 
 ### 1. Query Performance
+
 - **Optimized indexes**: Performance indexes for common queries
 - **Email lookup optimization**: Explicit index for email queries
 - **Analytics support**: Index on created_at for reporting queries
 - **Query analysis**: Automatic ANALYZE for query planner optimization
 
 ### 2. Connection Management
+
 - **Context-aware queries**: All queries use request context
 - **Timeout boundaries**: 5-second query timeout with context inheritance
 - **Resource cleanup**: Proper connection lifecycle management
@@ -92,14 +105,16 @@ s.r.Use(cors.Handler)                   // CORS handling
 ## 🔒 Configuration Enhancements
 
 ### 1. Environment-Specific Settings
+
 ```yaml
 security:
-  rate_limit_rps: 100      # Requests per second
-  rate_limit_burst: 20     # Burst allowance
-  request_timeout: "30s"   # Global request timeout
+  rate_limit_rps: 100 # Requests per second
+  rate_limit_burst: 20 # Burst allowance
+  request_timeout: '30s' # Global request timeout
 ```
 
 ### 2. CORS Optimization
+
 - **Restrictive origins**: Production-safe origin policies
 - **Extended preflight cache**: 24-hour cache for preflight requests
 - **Request ID exposure**: Enhanced debugging capabilities
@@ -107,6 +122,7 @@ security:
 ## 🚦 Monitoring & Observability
 
 ### 1. Enhanced Health Endpoint
+
 ```json
 {
   "status": "healthy",
@@ -118,6 +134,7 @@ security:
 ```
 
 ### 2. Request Tracing
+
 - **Request ID tracking**: Unique ID for each request
 - **Caller information**: File and line number in logs
 - **Performance metrics**: Request duration tracking
@@ -125,11 +142,13 @@ security:
 ## 🔄 Migration Strategy
 
 ### 1. Database Migrations
+
 - **Performance indexes**: Added optimized indexes for common queries
 - **Backward compatibility**: All changes are additive
 - **Zero-downtime**: Migrations designed for rolling deployments
 
 ### 2. Configuration Migration
+
 - **Environment variables**: Support for all new configuration options
 - **Backward compatibility**: Existing configurations continue to work
 - **Gradual adoption**: Optional features can be enabled incrementally
@@ -137,6 +156,7 @@ security:
 ## 📈 Performance Impact
 
 ### Expected Improvements:
+
 1. **Response times**: 20-30% improvement from connection pooling
 2. **Concurrency**: 2.5x improvement from increased connection limits
 3. **Security**: Enhanced protection against common attacks
@@ -146,6 +166,7 @@ security:
 ## 🛠️ Testing Validation
 
 All optimizations have been validated through:
+
 - ✅ Unit tests passing
 - ✅ Integration tests passing
 - ✅ Build verification successful

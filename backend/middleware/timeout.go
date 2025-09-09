@@ -12,15 +12,15 @@ func Timeout(timeout time.Duration) func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			ctx, cancel := context.WithTimeout(r.Context(), timeout)
 			defer cancel()
-			
+
 			r = r.WithContext(ctx)
-			
+
 			done := make(chan bool, 1)
 			go func() {
 				next.ServeHTTP(w, r)
 				done <- true
 			}()
-			
+
 			select {
 			case <-done:
 				// Request completed successfully

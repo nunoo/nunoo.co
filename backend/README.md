@@ -9,6 +9,7 @@ Production-grade Go backend with authentication, OpenAPI docs (Huma + Swagger UI
 ---
 
 ## Table of Contents
+
 - [Nunoo Backend API](#nunoo-backend-api)
   - [Table of Contents](#table-of-contents)
   - [Features](#features)
@@ -25,6 +26,7 @@ Production-grade Go backend with authentication, OpenAPI docs (Huma + Swagger UI
 ---
 
 ## Features
+
 - ⚙️ Chi router, CORS, structured logging, graceful shutdown
 - 🔐 Auth: register, login, refresh, me
 - 🪪 JWT (access + refresh), separate secrets & expiries
@@ -37,6 +39,7 @@ Production-grade Go backend with authentication, OpenAPI docs (Huma + Swagger UI
 ---
 
 ## Architecture
+
 ```
 +----------------------+       +------------------+
 |        Client        |       |   Swagger UI     |
@@ -69,15 +72,19 @@ Production-grade Go backend with authentication, OpenAPI docs (Huma + Swagger UI
 ---
 
 ## Quickstart (Development)
+
 Prerequisites:
+
 - Go 1.23+ (or use Docker)
 
 Run tests:
+
 ```bash
 go test ./...
 ```
 
 Run the server (in-memory storage by default):
+
 ```bash
 export JWT_SECRET=dev-access-secret
 export JWT_REFRESH_SECRET=dev-refresh-secret
@@ -86,11 +93,13 @@ go run ./main.go
 ```
 
 Server defaults to port 8080:
+
 - Health: http://localhost:8080/health
 - Swagger UI: http://localhost:8080/docs
 - OpenAPI JSON: http://localhost:8080/openapi.json
 
 Use a database by setting `DATABASE_URL`:
+
 ```bash
 export DATABASE_URL='postgres://user:pass@localhost:5432/db?sslmode=disable'
 export JWT_SECRET='your-strong-access-secret'
@@ -101,29 +110,35 @@ go run ./main.go
 ---
 
 ## Run with Docker Compose
+
 ```bash
 cp .env.example .env  # set strong secrets first
 docker compose up --build
 ```
+
 - App: http://localhost:8080
 - Swagger UI: http://localhost:8080/docs
 - OpenAPI: http://localhost:8080/openapi.json
 - Postgres: running as service `db` (port 5432 exposed by default in compose)
 
 Compose sets:
+
 - `DATABASE_URL=postgres://app:app@db:5432/app?sslmode=disable`
 - `JWT_SECRET`, `JWT_REFRESH_SECRET` (override in `.env`!)
 
 ---
 
 ## Configuration
+
 Configuration comes from `config/config.yaml` (or `.template`) and environment variables. Env vars override file values. Viper maps dots to underscores (e.g., `server.port` -> `SERVER_PORT`).
 
 Required in production:
+
 - `JWT_SECRET`: HMAC secret for access tokens
 - `JWT_REFRESH_SECRET`: HMAC secret for refresh tokens
 
 Common env vars:
+
 - `SERVER_PORT` (default: `8080`)
 - `SERVER_READTIMEOUT` (default: `15s`)
 - `SERVER_WRITETIMEOUT` (default: `15s`)
@@ -136,10 +151,12 @@ Common env vars:
 ---
 
 ## API Documentation
+
 - Swagger UI: http://localhost:8080/docs
 - OpenAPI JSON: http://localhost:8080/openapi.json
 
 Endpoints:
+
 - `POST /auth/register` — `{ email, password }` -> `201 { user: { id, email } }`
 - `POST /auth/login` — `{ email, password }` -> `200 { access_token, refresh_token, token_type, expires_in }`
 - `POST /auth/refresh` — `{ refresh_token }` -> `200 { access_token, refresh_token, token_type, expires_in }`
@@ -147,6 +164,7 @@ Endpoints:
 - `GET /health` -> `200 { status: ok }`
 
 cURL examples:
+
 ```bash
 # Register
 curl -sS -X POST http://localhost:8080/auth/register \
@@ -171,18 +189,21 @@ curl -sS -X POST http://localhost:8080/auth/refresh \
 ---
 
 ## Auth Flow
+
 - Register creates a user and returns the user envelope.
 - Login returns a short-lived access token and a longer-lived refresh token.
 - Use access token for `Authorization: Bearer <token>` on protected routes.
 - Refresh exchanges a valid refresh token for a new access token.
 
 Notes:
+
 - Access and refresh secrets are independent; set both in production.
 - Current refresh is stateless; consider rotation/revocation for higher security.
 
 ---
 
 ## Migrations
+
 - On startup, if a DB connection is configured (via `DATABASE_URL` or config), the server applies `./migrations/*.sql` in lexical order.
 - The runner stores applied filenames in `schema_migrations`.
 - If migration fails, the server continues (useful for dev). Ensure migrations are healthy in production.
@@ -190,14 +211,17 @@ Notes:
 ---
 
 ## Testing
+
 ```bash
 go test ./...
 ```
+
 Tests include end‑to‑end auth flows using an in‑memory repository.
 
 ---
 
 ## Troubleshooting
+
 - Huma module resolution:
   - If `go mod tidy` reports an unknown tag for `github.com/danielgtaylor/huma/v2`, pin a known good version:
     ```bash

@@ -1,101 +1,97 @@
 # nunoo.co
+
 [![Netlify Status](https://api.netlify.com/api/v1/badges/a89b2158-74ec-4c59-b97a-2395cbbd06b4/deploy-status)](https://app.netlify.com/sites/nunoo/deploys)
 
-## About Me
+Personal site and portfolio for Shawn Nunoo. Frontend is a Next.js 14 App Router site deployed on Netlify. This repo also includes an optional Go backend API in `/backend` used for experimentation and demos (auth, OpenAPI, Postgres).
 
-I'm **Shawn Nunoo**, a software developer and engineer passionate about building innovative digital experiences. This repository contains the source code for my personal portfolio website at [nunoo.co](https://nunoo.co).
+## Tech Stack
 
-### What I Do
+- Frontend: Next.js 14 (App Router), React 18, TypeScript
+- Styling: Tailwind CSS + `@tailwindcss/typography`
+- Content: MDX (with `remark-gfm`) and code highlighting via `rehype-prism`
+- Theming: `next-themes` (light/dark)
+- RSS: `/feed.xml` generated at runtime
+- Deployment: Netlify
+- Backend (optional): Go 1.23+, chi, Huma (OpenAPI/Swagger), Postgres or in-memory storage
 
-I specialize in full-stack web development with a focus on modern technologies and clean, performant code. My work spans:
+## Repository Structure
 
-- **Frontend Development**: Building responsive, accessible user interfaces with React, Next.js, and TypeScript
-- **Backend Systems**: Developing robust APIs and services using Go, Node.js, and various database technologies
-- **Performance Optimization**: Creating fast, efficient applications with attention to Core Web Vitals and user experience
-- **System Architecture**: Designing scalable, maintainable software solutions
+- `src/app` — App Router pages, layouts, and routes (including `feed.xml` and sections like `about`, `projects`, `speaking`, `uses`, `articles`)
+- `src/components` — Reusable UI components
+- `src/images` — Static images and assets
+- `src/lib` — Utilities (e.g., article helpers)
+- `styles` — Tailwind and code highlighting styles
+- `backend` — Go API service (separate process)
 
-### Current Focus
+## Requirements
 
-This portfolio showcases my journey in software development and serves as a platform to share insights, projects, and technical writing. The site is built with performance and accessibility in mind, featuring:
+- Node.js 18.18+ and npm
+- Optional (backend): Go 1.23+ or Docker
 
-- Modern React/Next.js architecture
-- Server-side rendering for optimal performance
-- Responsive design with Tailwind CSS
-- MDX support for rich content creation
-- Dark mode support
-- Optimized images and typography
+## Getting Started (Frontend)
 
-### Connect With Me
-
-- **GitHub**: [@nunoo](https://github.com/nunoo)
-- **LinkedIn**: [shawnnunoo](https://www.linkedin.com/in/shawnnunoo/)
-- **Email**: [shawn@nunoo.co](mailto:shawn@nunoo.co)
-- **Website**: [nunoo.co](https://nunoo.co)
-
-## Getting started
+Install dependencies:
 
 ```bash
 npm install
 ```
 
-Next, create a `.env.local` file in the root of your project and set the `NEXT_PUBLIC_SITE_URL` variable to your site's public URL:
+Create `.env.local` in the project root and set your public site URL (used for RSS link generation):
 
-```
+```bash
 NEXT_PUBLIC_SITE_URL=https://example.com
 ```
 
-Next, run the development server:
+Run the dev server:
 
 ```bash
 npm run dev
 ```
 
-Finally, open [http://localhost:3000](http://localhost:3000) in your browser to view the website.
+Open http://localhost:3000
 
-## Project Structure
+Common scripts:
 
-This portfolio is built using modern web technologies:
+- Lint: `npm run lint`
+- Format: `npm run format`
+- Build: `npm run build`
+- Start (after build): `npm start`
 
-- **Framework**: Next.js 14 with App Router
-- **Styling**: Tailwind CSS with custom design system
-- **Content**: MDX for blog posts and articles
-- **Deployment**: Netlify with automatic deployments
-- **TypeScript**: Full type safety throughout the application
+## Backend API (Optional)
 
-## Customizing
+A production‑grade Go backend lives in `/backend` with JWT auth, OpenAPI docs, and pluggable storage.
 
-You can start editing this template by modifying the files in the `/src` folder. The site will auto-update as you edit these files.
+Quickstart (in‑memory storage):
 
-### Key Directories
+```bash
+cd backend
+export JWT_SECRET=dev-access-secret
+export JWT_REFRESH_SECRET=dev-refresh-secret
+go run ./main.go
+```
 
-- `/src/app` - Next.js App Router pages and layouts
-- `/src/components` - Reusable React components
-- `/src/images` - Static images and assets
-- `/src/lib` - Utility functions and data fetching
-- `/backend` - Go backend API (separate service)
+Default endpoints:
 
-## Learn more
+- Health: http://localhost:8080/health
+- Swagger UI: http://localhost:8080/docs
+- OpenAPI JSON: http://localhost:8080/openapi.json
 
-To learn more about the technologies used in this site, see the following resources:
+Use Postgres by setting `DATABASE_URL` or configuring `backend/config/config.yaml`. See full details and Docker Compose setup in `backend/README.md`. Environment helpers are available: `backend/setup-env.sh` and `backend/setup-env.bat`.
 
-- [Tailwind CSS](https://tailwindcss.com/docs) - the official Tailwind CSS documentation
-- [Next.js](https://nextjs.org/docs) - the official Next.js documentation
-- [Headless UI](https://headlessui.dev) - the official Headless UI documentation
-- [MDX](https://mdxjs.com) - the MDX documentation
+## Deployment
+
+- Hosted on Netlify. Builds with `npm run build` and publishes the Next.js output (see `netlify.toml`).
+- Ensure `NEXT_PUBLIC_SITE_URL` is set in your Netlify environment so RSS links are correct.
+
+## Links
+
+- Website: https://nunoo.co
+- Projects: https://nunoo.co/projects
+- Articles: https://nunoo.co/articles
+- RSS: https://nunoo.co/feed.xml
+- Backend README: ./backend/README.md
+- Issues: ../../issues • Pull Requests: ../../pulls
 
 ## License
 
-This project is open source and available under the [MIT License](LICENSE).
-
-## Footer
-
-- Links: Website https://nunoo.co • Projects https://nunoo.co/projects • Articles https://nunoo.co/articles • RSS https://nunoo.co/feed.xml
-- Repo: [Issues](../../issues) • [Pull Requests](../../pulls) • [Backend README](backend/README.md)
-- Contributing: PRs welcome. For major changes, open an issue first to discuss.
-- Security: Please report vulnerabilities privately to [shawn@nunoo.co](mailto:shawn@nunoo.co).
-- Support: Star the repo and share it. Connect on LinkedIn: https://www.linkedin.com/in/shawnnunoo/
-- Tech: Next.js 14, TypeScript, Tailwind CSS, MDX. Deployed on Netlify.
-- Contact: [shawn@nunoo.co](mailto:shawn@nunoo.co)
-
-© 2025 Shawn Nunoo — MIT licensed.
-
+No license file is included. All rights reserved © 2025 Shawn Nunoo. If you’d like to use any part of this project, please reach out: shawn@nunoo.co

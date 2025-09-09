@@ -33,7 +33,7 @@ func (h *HealthChecker) HealthCheck(w http.ResponseWriter, r *http.Request) {
 	if h.db != nil {
 		ctx, cancel := context.WithTimeout(r.Context(), 2*time.Second)
 		defer cancel()
-		
+
 		if err := h.db.PingContext(ctx); err != nil {
 			response.Status = "unhealthy"
 			response.Services["database"] = "down"
@@ -50,6 +50,6 @@ func (h *HealthChecker) HealthCheck(w http.ResponseWriter, r *http.Request) {
 	} else {
 		w.WriteHeader(http.StatusOK)
 	}
-	
+
 	json.NewEncoder(w).Encode(response)
 }

@@ -24,8 +24,8 @@ import (
 	"nunoo.co/backend/api/routes"
 	"nunoo.co/backend/config"
 	"nunoo.co/backend/handlers"
-	"nunoo.co/backend/migrations"
 	custommiddleware "nunoo.co/backend/middleware"
+	"nunoo.co/backend/migrations"
 	"nunoo.co/backend/models"
 	"nunoo.co/backend/repository"
 )
@@ -140,8 +140,12 @@ func NewServer(cfg *config.Config) http.Handler {
 	if len(s.refreshSecret) == 0 {
 		s.refreshSecret = []byte(os.Getenv("JWT_REFRESH_SECRET"))
 	}
-	if s.accessTTL == 0 { s.accessTTL = 15 * time.Minute }
-	if s.refreshTTL == 0 { s.refreshTTL = 72 * time.Hour }
+	if s.accessTTL == 0 {
+		s.accessTTL = 15 * time.Minute
+	}
+	if s.refreshTTL == 0 {
+		s.refreshTTL = 72 * time.Hour
+	}
 
 	s.routes()
 	return s.r
@@ -153,7 +157,7 @@ func (s *Server) routes() {
 	s.r.Use(middleware.RealIP)
 	s.r.Use(middleware.Logger)
 	s.r.Use(middleware.Recoverer)
-	
+
 	// Performance and security middleware
 	rateLimiter := custommiddleware.NewRateLimiter(100, 20) // 100 requests per second with burst of 20
 	s.r.Use(rateLimiter.Limit)
@@ -168,21 +172,21 @@ func (s *Server) routes() {
 		MaxAge:           86400, // 24 hours cache for preflight requests
 	}))
 
-    routes.RegisterHealthRoutes(s.r, s.healthChecker.HealthCheck)
+	routes.RegisterHealthRoutes(s.r, s.healthChecker.HealthCheck)
 
-    routes.RegisterAuthRoutes(s.r, routes.AuthHandlers{
-        Register: s.handleRegister,
-        Login:    s.handleLogin,
-        Refresh:  s.handleRefresh,
-    })
+	routes.RegisterAuthRoutes(s.r, routes.AuthHandlers{
+		Register: s.handleRegister,
+		Login:    s.handleLogin,
+		Refresh:  s.handleRefresh,
+	})
 
-    routes.RegisterProtectedRoutes(s.r, routes.Protected{
-        Me:             s.handleMe,
-        AuthMiddleware: s.authMiddleware,
-    })
+	routes.RegisterProtectedRoutes(s.r, routes.Protected{
+		Me:             s.handleMe,
+		AuthMiddleware: s.authMiddleware,
+	})
 
-    // Mount Huma for OpenAPI + Swagger over the router
-    s.r.Mount("/", s.mountHuma())
+	// Mount Huma for OpenAPI + Swagger over the router
+	s.r.Mount("/", s.mountHuma())
 }
 
 // Request/response types
@@ -363,7 +367,9 @@ func buildPostgresDSN(cfg *config.Config) string {
 	port := cfg.Database.Port
 	db := cfg.Database.DBName
 	ssl := cfg.Database.SSLMode
-	if ssl == "" { ssl = "disable" }
+	if ssl == "" {
+		ssl = "disable"
+	}
 	pu := url.UserPassword(user, pass)
 	return fmt.Sprintf("postgres://%s@%s:%s/%s?sslmode=%s", pu.String(), host, port, db, ssl)
 }
@@ -395,13 +401,13 @@ func verifyPassword(stored, pw string) bool {
 	if len(parts) != 5 {
 		return false
 	}
-	
+
 	// Parse parameters from stored hash
 	var memory, iterations, parallelism int
 	if _, err := fmt.Sscanf(parts[2], "m=%d,t=%d,p=%d", &memory, &iterations, &parallelism); err != nil {
 		return false
 	}
-	
+
 	salt, err := base64.RawURLEncoding.DecodeString(parts[3])
 	if err != nil {
 		return false
@@ -410,7 +416,7 @@ func verifyPassword(stored, pw string) bool {
 	if err != nil {
 		return false
 	}
-	
+
 	h := argon2.IDKey([]byte(pw), salt, uint32(iterations), uint32(memory), uint8(parallelism), uint32(len(expected)))
 	return constantTimeEqual(expected, h)
 }
@@ -461,6 +467,6 @@ func (s *Server) issueRefreshToken(u *models.User) (string, time.Duration, error
 }
 
 func newJTI() string {
-    b := randomBytes(12)
-    return base64.RawURLEncoding.EncodeToString(b)
+	b := randomBytes(12)
+	return base64.RawURLEncoding.EncodeToString(b)
 }

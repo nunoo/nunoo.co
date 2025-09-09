@@ -8,8 +8,8 @@ import (
 	"os"
 	"testing"
 
-	"nunoo.co/backend/config"
 	"nunoo.co/backend/api"
+	"nunoo.co/backend/config"
 )
 
 type registerRequest struct {

@@ -16,8 +16,8 @@ type Config struct {
 }
 
 type SecurityConfig struct {
-	RateLimitRPS   int `mapstructure:"rate_limit_rps"`
-	RateLimitBurst int `mapstructure:"rate_limit_burst"`
+	RateLimitRPS   int           `mapstructure:"rate_limit_rps"`
+	RateLimitBurst int           `mapstructure:"rate_limit_burst"`
 	RequestTimeout time.Duration `mapstructure:"request_timeout"`
 }
 
@@ -49,7 +49,7 @@ func Load() (*Config, error) {
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath(".")
 	viper.AddConfigPath("./config")
-	
+
 	viper.AutomaticEnv()
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 
@@ -58,12 +58,12 @@ func Load() (*Config, error) {
 	viper.SetDefault("server.readTimeout", "15s")
 	viper.SetDefault("server.writeTimeout", "15s")
 	viper.SetDefault("server.idleTimeout", "60s")
-	
+
 	viper.SetDefault("database.sslmode", "disable")
-	
+
 	viper.SetDefault("jwt.tokenExpiry", "15m")
 	viper.SetDefault("jwt.refreshExpiry", "72h")
-	
+
 	viper.SetDefault("security.rateLimitRPS", 100)
 	viper.SetDefault("security.rateLimitBurst", 20)
 	viper.SetDefault("security.requestTimeout", "30s")

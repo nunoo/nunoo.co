@@ -5,12 +5,14 @@ This directory contains scripts to automatically set up your Nunoo Backend envir
 ## Quick Start
 
 ### For macOS/Linux:
+
 ```bash
 cd backend
 ./setup-env.sh
 ```
 
 ### For Windows:
+
 ```cmd
 cd backend
 setup-env.bat
@@ -48,6 +50,7 @@ JWT_REFRESHEXPIRY=72h
 ## After Running the Script
 
 1. **Load the environment variables:**
+
    ```bash
    # macOS/Linux
    source .env
@@ -71,17 +74,21 @@ JWT_REFRESHEXPIRY=72h
 ## Troubleshooting
 
 ### If you get permission errors on macOS/Linux:
+
 ```bash
 chmod +x setup-env.sh
 ```
 
 ### If the script fails to generate secrets:
+
 Make sure you have OpenSSL installed:
+
 - **macOS**: Usually pre-installed
 - **Linux**: `sudo apt-get install openssl` (Ubuntu/Debian) or `sudo yum install openssl` (CentOS/RHEL)
 - **Windows**: The batch script uses PowerShell instead of OpenSSL
 
 ### If you need to regenerate secrets:
+
 Simply run the script again - it will update existing values in your `.env` file.
 
 ## Manual Setup Alternative
@@ -90,6 +97,7 @@ If you prefer to set up manually, you can:
 
 1. Create a `.env` file
 2. Generate secrets manually:
+
    ```bash
    # Generate JWT secret
    openssl rand -base64 64
@@ -97,6 +105,7 @@ If you prefer to set up manually, you can:
    # Generate refresh secret
    openssl rand -base64 64
    ```
+
 3. Add them to your `.env` file
 
 But the automated scripts are much easier and more secure!

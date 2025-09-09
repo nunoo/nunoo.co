@@ -3,17 +3,17 @@
 # Nunoo Backend Environment Setup Script
 # This script generates JWT secrets and sets up your environment
 
-set -e  # Exit on any error
+set -e # Exit on any error
 
 echo "🔐 Setting up Nunoo Backend environment..."
 
 # Check if .env file exists, create if it doesn't
 ENV_FILE=".env"
 if [ ! -f "$ENV_FILE" ]; then
-    echo "📝 Creating .env file..."
-    touch "$ENV_FILE"
+	echo "📝 Creating .env file..."
+	touch "$ENV_FILE"
 else
-    echo "📝 .env file already exists, updating JWT secrets..."
+	echo "📝 .env file already exists, updating JWT secrets..."
 fi
 
 # Generate JWT secrets
@@ -36,34 +36,34 @@ echo "📝 Updating .env file..."
 
 # Function to update or add environment variable in .env file
 update_env_var() {
-    local key=$1
-    local value=$2
+	local key=$1
+	local value=$2
 
-    if grep -q "^${key}=" "$ENV_FILE"; then
-        # Variable exists, update it - use a more robust approach
-        # Create a temporary file with the updated content
-        grep -v "^${key}=" "$ENV_FILE" > "${ENV_FILE}.tmp"
-        echo "${key}=${value}" >> "${ENV_FILE}.tmp"
-        mv "${ENV_FILE}.tmp" "$ENV_FILE"
-    else
-        # Variable doesn't exist, add it
-        echo "${key}=${value}" >> "$ENV_FILE"
-    fi
+	if grep -q "^${key}=" "$ENV_FILE"; then
+		# Variable exists, update it - use a more robust approach
+		# Create a temporary file with the updated content
+		grep -v "^${key}=" "$ENV_FILE" >"${ENV_FILE}.tmp"
+		echo "${key}=${value}" >>"${ENV_FILE}.tmp"
+		mv "${ENV_FILE}.tmp" "$ENV_FILE"
+	else
+		# Variable doesn't exist, add it
+		echo "${key}=${value}" >>"$ENV_FILE"
+	fi
 }
 
 # Function to create a clean .env file
 create_clean_env() {
-    # Remove any existing .env file
-    rm -f "$ENV_FILE"
+	# Remove any existing .env file
+	rm -f "$ENV_FILE"
 
-    # Create new .env file with proper formatting
-    echo "JWT_SECRET=${JWT_SECRET}" > "$ENV_FILE"
-    echo "JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET}" >> "$ENV_FILE"
-    echo "DATABASE_URL=postgres://app:${DB_PASSWORD}@localhost:5432/nunoo_db?sslmode=disable" >> "$ENV_FILE"
-    echo "DB_PASSWORD=${DB_PASSWORD}" >> "$ENV_FILE"
-    echo "SERVER_PORT=8080" >> "$ENV_FILE"
-    echo "JWT_TOKENEXPIRY=15m" >> "$ENV_FILE"
-    echo "JWT_REFRESHEXPIRY=72h" >> "$ENV_FILE"
+	# Create new .env file with proper formatting
+	echo "JWT_SECRET=${JWT_SECRET}" >"$ENV_FILE"
+	echo "JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET}" >>"$ENV_FILE"
+	echo "DATABASE_URL=postgres://app:${DB_PASSWORD}@localhost:5432/nunoo_db?sslmode=disable" >>"$ENV_FILE"
+	echo "DB_PASSWORD=${DB_PASSWORD}" >>"$ENV_FILE"
+	echo "SERVER_PORT=8080" >>"$ENV_FILE"
+	echo "JWT_TOKENEXPIRY=15m" >>"$ENV_FILE"
+	echo "JWT_REFRESHEXPIRY=72h" >>"$ENV_FILE"
 }
 
 # Create clean .env file
@@ -89,10 +89,10 @@ echo "   The .env file has been added to .gitignore automatically."
 
 # Add .env to .gitignore if not already there
 if ! grep -q "^\.env$" .gitignore 2>/dev/null; then
-    echo "" >> .gitignore
-    echo "# Environment variables" >> .gitignore
-    echo ".env" >> .gitignore
-    echo "✅ Added .env to .gitignore"
+	echo "" >>.gitignore
+	echo "# Environment variables" >>.gitignore
+	echo ".env" >>.gitignore
+	echo "✅ Added .env to .gitignore"
 fi
 
 echo ""

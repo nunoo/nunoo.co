@@ -23,8 +23,12 @@ func Apply(db *sql.DB, dir string) error {
 	}
 	entries := []string{}
 	err = filepath.WalkDir(dir, func(path string, d fs.DirEntry, err error) error {
-		if err != nil { return err }
-		if d.IsDir() { return nil }
+		if err != nil {
+			return err
+		}
+		if d.IsDir() {
+			return nil
+		}
 		if filepath.Ext(d.Name()) == ".sql" {
 			entries = append(entries, path)
 		}
@@ -40,12 +44,18 @@ func Apply(db *sql.DB, dir string) error {
 			continue
 		}
 		b, err := os.ReadFile(p)
-		if err != nil { return err }
+		if err != nil {
+			return err
+		}
 		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 		_, execErr := db.ExecContext(ctx, string(b))
 		cancel()
-		if execErr != nil { return fmt.Errorf("migration %s failed: %w", name, execErr) }
-		if err := markApplied(db, name); err != nil { return err }
+		if execErr != nil {
+			return fmt.Errorf("migration %s failed: %w", name, execErr)
+		}
+		if err := markApplied(db, name); err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -61,12 +71,16 @@ func ensureTable(db *sql.DB) error {
 
 func loadApplied(db *sql.DB) (map[string]bool, error) {
 	rows, err := db.Query(`SELECT name FROM schema_migrations`)
-	if err != nil { return map[string]bool{}, nil } // table may not exist yet; ignore
+	if err != nil {
+		return map[string]bool{}, nil
+	} // table may not exist yet; ignore
 	defer rows.Close()
 	m := map[string]bool{}
 	for rows.Next() {
 		var n string
-		if err := rows.Scan(&n); err != nil { return nil, err }
+		if err := rows.Scan(&n); err != nil {
+			return nil, err
+		}
 		m[n] = true
 	}
 	return m, rows.Err()

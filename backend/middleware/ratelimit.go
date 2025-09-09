@@ -28,10 +28,10 @@ func NewRateLimiter(r rate.Limit, b int) *RateLimiter {
 		rate:     r,
 		burst:    b,
 	}
-	
+
 	// Clean up old visitors every 5 minutes
 	go rl.cleanupOldVisitors()
-	
+
 	return rl
 }
 
@@ -39,13 +39,13 @@ func NewRateLimiter(r rate.Limit, b int) *RateLimiter {
 func (rl *RateLimiter) Limit(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ip := getClientIP(r)
-		
+
 		limiter := rl.getLimiter(ip)
 		if !limiter.Allow() {
 			http.Error(w, "Rate limit exceeded", http.StatusTooManyRequests)
 			return
 		}
-		
+
 		next.ServeHTTP(w, r)
 	})
 }
@@ -53,14 +53,14 @@ func (rl *RateLimiter) Limit(next http.Handler) http.Handler {
 func (rl *RateLimiter) getLimiter(ip string) *rate.Limiter {
 	rl.mu.Lock()
 	defer rl.mu.Unlock()
-	
+
 	v, exists := rl.visitors[ip]
 	if !exists {
 		limiter := rate.NewLimiter(rl.rate, rl.burst)
 		rl.visitors[ip] = &visitor{limiter, time.Now()}
 		return limiter
 	}
-	
+
 	v.lastSeen = time.Now()
 	return v.limiter
 }
@@ -68,7 +68,7 @@ func (rl *RateLimiter) getLimiter(ip string) *rate.Limiter {
 func (rl *RateLimiter) cleanupOldVisitors() {
 	for {
 		time.Sleep(5 * time.Minute)
-		
+
 		rl.mu.Lock()
 		for ip, v := range rl.visitors {
 			if time.Since(v.lastSeen) > 10*time.Minute {
@@ -84,12 +84,12 @@ func getClientIP(r *http.Request) string {
 	if xff := r.Header.Get("X-Forwarded-For"); xff != "" {
 		return xff
 	}
-	
+
 	// Check X-Real-Ip header
 	if xri := r.Header.Get("X-Real-Ip"); xri != "" {
 		return xri
 	}
-	
+
 	// Fall back to RemoteAddr
 	return r.RemoteAddr
 }
