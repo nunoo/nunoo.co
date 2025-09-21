@@ -223,6 +223,7 @@ Tests include end‑to‑end auth flows using an in‑memory repository.
 ## Troubleshooting
 
 - Huma module resolution:
+
   - If `go mod tidy` reports an unknown tag for `github.com/danielgtaylor/huma/v2`, pin a known good version:
     ```bash
     go get github.com/danielgtaylor/huma/v2@v2.22.0
@@ -231,6 +232,7 @@ Tests include end‑to‑end auth flows using an in‑memory repository.
   - If behind a proxy: `export GOPROXY=https://proxy.golang.org,direct`
 
 - Tokens invalid:
+
   - Ensure `JWT_SECRET` and `JWT_REFRESH_SECRET` are set consistently between login and subsequent requests.
 
 - DB connection issues:

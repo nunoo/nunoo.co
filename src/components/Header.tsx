@@ -3,13 +3,14 @@
 import { Fragment, useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useTheme } from 'next-themes';
 import { Popover, Transition } from '@headlessui/react';
 import clsx from 'clsx';
 
 import { Container } from '@/components/Container';
 import avatarImage from '@/images/avatar.jpg';
+import { useMe } from '@/lib/useMe';
 
 function CloseIcon(props: React.ComponentPropsWithoutRef<'svg'>) {
   return (
@@ -264,6 +265,8 @@ function Avatar({
 
 export function Header() {
   let isHomePage = usePathname() === '/';
+  const router = useRouter();
+  const { user } = useMe();
 
   let headerRef = useRef<React.ElementRef<'div'>>(null);
   let avatarRef = useRef<React.ElementRef<'div'>>(null);
@@ -445,7 +448,32 @@ export function Header() {
               </div>
               <div className='flex justify-end md:flex-1'>
                 <div className='pointer-events-auto'>
-                  <ThemeToggle />
+                  <div className='flex items-center gap-2'>
+                    {user ? (
+                      <>
+                        <span className='hidden sm:inline text-sm text-zinc-600 dark:text-zinc-300'>
+                          {user.email}
+                        </span>
+                        <button
+                          className='rounded-full bg-zinc-900 px-3 py-1 text-sm text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white'
+                          onClick={async () => {
+                            await fetch('/api/auth/logout', { method: 'POST' });
+                            router.refresh();
+                          }}
+                        >
+                          Sign out
+                        </button>
+                      </>
+                    ) : (
+                      <Link
+                        href='/login'
+                        className='rounded-full bg-zinc-900 px-3 py-1 text-sm text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white'
+                      >
+                        Sign in
+                      </Link>
+                    )}
+                    <ThemeToggle />
+                  </div>
                 </div>
               </div>
             </div>

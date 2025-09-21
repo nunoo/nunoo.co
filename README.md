@@ -59,7 +59,7 @@ Common scripts:
 
 ## Backend API (Optional)
 
-A production‑grade Go backend lives in `/backend` with JWT auth, OpenAPI docs, and pluggable storage.
+A production‑grade Go backend lives in `/backend` with JWT auth, OpenAPI/Swagger docs, and pluggable storage.
 
 Quickstart (in‑memory storage):
 
@@ -82,6 +82,7 @@ Use Postgres by setting `DATABASE_URL` or configuring `backend/config/config.yam
 
 - Hosted on Netlify. Builds with `npm run build` and publishes the Next.js output (see `netlify.toml`).
 - Ensure `NEXT_PUBLIC_SITE_URL` is set in your Netlify environment so RSS links are correct.
+- Backend Docker: see `backend/README.md` for Docker Compose instructions.
 
 ## Links
 
@@ -90,6 +91,7 @@ Use Postgres by setting `DATABASE_URL` or configuring `backend/config/config.yam
 - Articles: https://nunoo.co/articles
 - RSS: https://nunoo.co/feed.xml
 - Backend README: ./backend/README.md
+- Local development guide: ./docs/local-development.md
 - Issues: ../../issues • Pull Requests: ../../pulls
 
 ## License

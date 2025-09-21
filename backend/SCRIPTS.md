@@ -21,10 +21,12 @@ setup-env.bat
 ## What These Scripts Do
 
 1. **Generate Secure JWT Secrets**
+
    - Creates cryptographically secure 64-byte secrets for access and refresh tokens
    - Generates a random database password for development
 
 2. **Create/Update .env File**
+
    - Automatically creates a `.env` file if it doesn't exist
    - Updates existing JWT secrets if the file already exists
    - Sets sensible defaults for other configuration values
