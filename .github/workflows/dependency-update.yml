@@ -1,0 +1,117 @@
+name: Dependency Updates
+
+on:
+  schedule:
+    - cron: '0 10 * * MON'
+  workflow_dispatch:
+
+jobs:
+  update-npm-dependencies:
+    name: Update NPM Dependencies
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install npm-check-updates
+        run: npm install -g npm-check-updates
+
+      - name: Check for updates
+        id: ncu
+        run: |
+          ncu -u --target minor
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "updates=true" >> $GITHUB_OUTPUT
+          else
+            echo "updates=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Install updated dependencies
+        if: steps.ncu.outputs.updates == 'true'
+        run: npm install
+
+      - name: Run tests
+        if: steps.ncu.outputs.updates == 'true'
+        run: |
+          npm run lint
+          npm run build
+
+      - name: Create Pull Request
+        if: steps.ncu.outputs.updates == 'true'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: 'chore: update npm dependencies'
+          title: 'chore: update npm dependencies'
+          body: |
+            This PR updates npm dependencies to their latest minor versions.
+            
+            Changes made:
+            - Updated package.json with latest minor versions
+            - Verified build and lint passes
+            
+            Please review the changes before merging.
+          branch: chore/update-npm-dependencies
+          delete-branch: true
+
+  update-go-dependencies:
+    name: Update Go Dependencies
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.23'
+
+      - name: Update Go dependencies
+        working-directory: backend
+        run: |
+          go get -u ./...
+          go mod tidy
+
+      - name: Check for changes
+        id: changes
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "updates=true" >> $GITHUB_OUTPUT
+          else
+            echo "updates=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Run tests
+        if: steps.changes.outputs.updates == 'true'
+        working-directory: backend
+        run: |
+          go test ./...
+          go build .
+
+      - name: Create Pull Request
+        if: steps.changes.outputs.updates == 'true'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: 'chore: update go dependencies'
+          title: 'chore: update go dependencies'
+          body: |
+            This PR updates Go dependencies to their latest versions.
+            
+            Changes made:
+            - Updated go.mod and go.sum
+            - Verified tests and build pass
+            
+            Please review the changes before merging.
+          branch: chore/update-go-dependencies
+          delete-branch: true
