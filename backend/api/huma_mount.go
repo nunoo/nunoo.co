@@ -44,7 +44,7 @@ type HealthResponse struct {
 
 // Huma router setup integrating existing chi routes and exposing OpenAPI & Swagger UI.
 func (s *Server) mountHuma() http.Handler {
-	hs := newHumaServer("/")
+	hs := newHumaServer("/api")
 
 	// API metadata
 	hs.API.OpenAPI().Info.Description = "Nunoo Backend API with Authentication"

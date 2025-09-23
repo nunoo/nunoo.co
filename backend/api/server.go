@@ -28,6 +28,7 @@ import (
 	"nunoo.co/backend/migrations"
 	"nunoo.co/backend/models"
 	"nunoo.co/backend/repository"
+	"nunoo.co/backend/types"
 )
 
 // Server encapsulates router and dependencies.
@@ -35,6 +36,7 @@ type Server struct {
 	r             *chi.Mux
 	cfg           *config.Config
 	users         repository.UserRepository
+	photos        repository.PhotoRepository
 	validate      *validator.Validate
 	accessSecret  []byte
 	refreshSecret []byte
@@ -44,7 +46,7 @@ type Server struct {
 }
 
 // ctxKey is the private context key type for user injection
-type ctxKey struct{}
+var userCtxKey = types.CtxKey{}
 
 // NewServerForTesting constructs a fully-wired HTTP handler for tests and dev.
 func NewServerForTesting(cfg *config.Config) http.Handler {
@@ -76,6 +78,7 @@ func NewServerForTesting(cfg *config.Config) http.Handler {
 		r:             chi.NewRouter(),
 		cfg:           cfg,
 		users:         repository.NewMemoryUserRepo(),
+		photos:        repository.NewMemoryPhotoRepo(),
 		validate:      validator.New(),
 		accessSecret:  accessSecret,
 		refreshSecret: refreshSecret,
@@ -127,6 +130,7 @@ func NewServer(cfg *config.Config) http.Handler {
 		r:             chi.NewRouter(),
 		cfg:           cfg,
 		users:         repository.NewPostgresUserRepo(db),
+		photos:        repository.NewPostgresPhotoRepo(db),
 		validate:      validator.New(),
 		accessSecret:  []byte(cfg.JWT.Secret),
 		refreshSecret: []byte(cfg.JWT.RefreshSecret),
@@ -185,8 +189,21 @@ func (s *Server) routes() {
 		AuthMiddleware: s.authMiddleware,
 	})
 
-	// Mount Huma for OpenAPI + Swagger over the router
-	s.r.Mount("/", s.mountHuma())
+	// Register photo routes
+	photoHandlers := handlers.NewPhotoHandlers(s.photos)
+	routes.RegisterPhotoRoutes(s.r, routes.PhotoHandlers{
+		UploadPhoto:    photoHandlers.UploadPhoto,
+		GetPhotoFeed:   photoHandlers.GetPhotoFeed,
+		GetPhoto:       photoHandlers.GetPhoto,
+		DeletePhoto:    photoHandlers.DeletePhoto,
+		AuthMiddleware: s.authMiddleware,
+	})
+
+	// Serve static files for uploaded photos
+	s.r.Handle("/uploads/*", http.StripPrefix("/uploads/", http.FileServer(http.Dir("./uploads"))))
+
+	// Mount Huma for OpenAPI + Swagger at /api/
+	s.r.Mount("/api", s.mountHuma())
 }
 
 // Request/response types
@@ -303,7 +320,7 @@ func (s *Server) handleRefresh(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleMe(w http.ResponseWriter, r *http.Request) {
-	val := r.Context().Value(ctxKey{})
+	val := r.Context().Value(userCtxKey)
 	u, _ := val.(*models.User)
 	if u == nil {
 		writeError(w, http.StatusUnauthorized, "unauthorized")
@@ -337,7 +354,7 @@ func (s *Server) authMiddleware(next http.Handler) http.Handler {
 			writeError(w, http.StatusUnauthorized, "invalid token")
 			return
 		}
-		ctx := context.WithValue(r.Context(), ctxKey{}, u)
+		ctx := context.WithValue(r.Context(), userCtxKey, u)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

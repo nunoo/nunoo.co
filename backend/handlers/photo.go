@@ -1,0 +1,336 @@
+package handlers
+
+import (
+	"encoding/json"
+	"fmt"
+	"io"
+	"mime/multipart"
+	"net/http"
+	"os"
+	"path/filepath"
+	"strconv"
+	"strings"
+	"time"
+
+	"go.uber.org/zap"
+	"nunoo.co/backend/models"
+	"nunoo.co/backend/repository"
+	"nunoo.co/backend/types"
+)
+
+const (
+	MaxFileSize   = 10 << 20 // 10MB
+	MaxMemory     = 5 << 20  // 5MB for form parsing
+	UploadDir     = "./uploads/photos"
+	ThumbnailDir  = "./uploads/thumbnails"
+)
+
+var allowedMimeTypes = map[string]bool{
+	"image/jpeg":             true,
+	"image/png":              true,
+	"image/webp":             true,
+	"image/gif":              true,
+	"application/octet-stream": true, // Fallback for content type detection issues
+}
+
+type PhotoHandlers struct {
+	photos repository.PhotoRepository
+	logger *zap.Logger
+}
+
+func NewPhotoHandlers(photos repository.PhotoRepository) *PhotoHandlers {
+	os.MkdirAll(UploadDir, 0755)
+	os.MkdirAll(ThumbnailDir, 0755)
+	
+	logger, _ := zap.NewProduction()
+	
+	return &PhotoHandlers{
+		photos: photos,
+		logger: logger,
+	}
+}
+
+type UploadPhotoRequest struct {
+	Caption string `json:"caption,omitempty"`
+}
+
+type UploadPhotoResponse struct {
+	Photo *models.Photo `json:"photo"`
+}
+
+func (h *PhotoHandlers) UploadPhoto(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseMultipartForm(MaxMemory); err != nil {
+		writeError(w, http.StatusBadRequest, "failed to parse multipart form")
+		return
+	}
+
+	file, header, err := r.FormFile("photo")
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "photo file is required")
+		return
+	}
+	defer file.Close()
+
+	if header.Size > MaxFileSize {
+		writeError(w, http.StatusBadRequest, "file too large (max 10MB)")
+		return
+	}
+
+	mimeType := header.Header.Get("Content-Type")
+	// Fallback to detecting MIME type from file content if not set
+	if mimeType == "" {
+		// Read a small portion to detect MIME type
+		buf := make([]byte, 512)
+		n, _ := file.Read(buf)
+		mimeType = http.DetectContentType(buf[:n])
+		file.Seek(0, 0) // Reset file pointer
+	}
+	
+	if !allowedMimeTypes[mimeType] {
+		writeError(w, http.StatusBadRequest, fmt.Sprintf("unsupported file type (jpeg, png, webp, gif only): %s", mimeType))
+		return
+	}
+
+	// Read file content for security validation
+	fileContent := make([]byte, header.Size)
+	if _, err := file.Read(fileContent); err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to read file")
+		return
+	}
+	file.Seek(0, 0) // Reset file pointer
+
+	// Security validation
+	if err := ValidateImageFile(fileContent); err != nil {
+		writeError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	user := getUserFromContext(r)
+	if user == nil {
+		writeError(w, http.StatusUnauthorized, "unauthorized")
+		return
+	}
+
+	caption := r.FormValue("caption")
+	// Sanitize caption to prevent XSS
+	caption = sanitizeInput(caption)
+
+	photo, err := h.savePhoto(file, header, user.ID, caption, mimeType)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, fmt.Sprintf("failed to save photo: %v", err))
+		return
+	}
+
+	if err := h.photos.Create(r.Context(), photo); err != nil {
+		h.logger.Error("failed to create photo record", 
+			zap.Error(err),
+			zap.String("user_id", user.ID),
+			zap.String("photo_id", photo.ID))
+		
+		// Clean up uploaded file on database error
+		h.deletePhotoFiles(photo)
+		
+		if err == repository.ErrPhotoExists {
+			writeError(w, http.StatusConflict, "photo already exists")
+			return
+		}
+		writeError(w, http.StatusInternalServerError, "failed to save photo metadata")
+		return
+	}
+
+	writeJSON(w, http.StatusCreated, UploadPhotoResponse{Photo: photo})
+}
+
+func (h *PhotoHandlers) GetPhotoFeed(w http.ResponseWriter, r *http.Request) {
+	page, _ := strconv.Atoi(r.URL.Query().Get("page"))
+	if page < 1 {
+		page = 1
+	}
+
+	limit, _ := strconv.Atoi(r.URL.Query().Get("limit"))
+	if limit < 1 || limit > 50 {
+		limit = 20
+	}
+
+	user := getUserFromContext(r)
+	if user == nil {
+		writeError(w, http.StatusUnauthorized, "unauthorized")
+		return
+	}
+
+	photos, totalCount, err := h.photos.GetByUserID(r.Context(), user.ID, page, limit)
+	if err != nil {
+		h.logger.Error("failed to get photos", 
+			zap.Error(err),
+			zap.String("user_id", user.ID),
+			zap.Int("page", page),
+			zap.Int("limit", limit))
+		writeError(w, http.StatusInternalServerError, "failed to get photos")
+		return
+	}
+
+	hasMore := int64(page*limit) < totalCount
+
+	feed := &models.PhotoFeed{
+		Photos:     photos,
+		Page:       page,
+		Limit:      limit,
+		TotalCount: totalCount,
+		HasMore:    hasMore,
+	}
+
+	writeJSON(w, http.StatusOK, feed)
+}
+
+func (h *PhotoHandlers) GetPhoto(w http.ResponseWriter, r *http.Request) {
+	photoID := r.URL.Query().Get("id")
+	if photoID == "" {
+		writeError(w, http.StatusBadRequest, "photo id is required")
+		return
+	}
+
+	photo, err := h.photos.GetByID(r.Context(), photoID)
+	if err != nil {
+		if err == repository.ErrPhotoNotFound {
+			writeError(w, http.StatusNotFound, "photo not found")
+			return
+		}
+		writeError(w, http.StatusInternalServerError, "failed to get photo")
+		return
+	}
+
+	writeJSON(w, http.StatusOK, map[string]*models.Photo{"photo": photo})
+}
+
+func (h *PhotoHandlers) DeletePhoto(w http.ResponseWriter, r *http.Request) {
+	photoID := r.URL.Query().Get("id")
+	if photoID == "" {
+		writeError(w, http.StatusBadRequest, "photo id is required")
+		return
+	}
+
+	user := getUserFromContext(r)
+	if user == nil {
+		writeError(w, http.StatusUnauthorized, "unauthorized")
+		return
+	}
+
+	photo, err := h.photos.GetByID(r.Context(), photoID)
+	if err != nil {
+		if err == repository.ErrPhotoNotFound {
+			writeError(w, http.StatusNotFound, "photo not found")
+			return
+		}
+		writeError(w, http.StatusInternalServerError, "failed to get photo")
+		return
+	}
+
+	if photo.UserID != user.ID {
+		writeError(w, http.StatusForbidden, "cannot delete another user's photo")
+		return
+	}
+
+	if err := h.photos.Delete(r.Context(), photoID); err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to delete photo")
+		return
+	}
+
+	h.deletePhotoFiles(photo)
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func (h *PhotoHandlers) savePhoto(file multipart.File, header *multipart.FileHeader, userID, caption, mimeType string) (*models.Photo, error) {
+	photoID := newPhotoID()
+	ext := getFileExtension(mimeType)
+	fileName := fmt.Sprintf("%s%s", photoID, ext)
+	filePath := filepath.Join(UploadDir, fileName)
+
+	dst, err := os.Create(filePath)
+	if err != nil {
+		return nil, err
+	}
+	defer dst.Close()
+
+	if _, err := io.Copy(dst, file); err != nil {
+		return nil, err
+	}
+
+	photo := &models.Photo{
+		ID:          photoID,
+		UserID:      userID,
+		FileName:    fileName,
+		OriginalURL: fmt.Sprintf("/uploads/photos/%s", fileName),
+		Caption:     caption,
+		FileSize:    header.Size,
+		MimeType:    mimeType,
+		CreatedAt:   time.Now(),
+		UpdatedAt:   time.Now(),
+	}
+
+	return photo, nil
+}
+
+func (h *PhotoHandlers) deletePhotoFiles(photo *models.Photo) {
+	originalPath := filepath.Join(UploadDir, photo.FileName)
+	os.Remove(originalPath)
+
+	if photo.ThumbnailURL != "" {
+		thumbnailFileName := strings.TrimPrefix(photo.ThumbnailURL, "/uploads/thumbnails/")
+		thumbnailPath := filepath.Join(ThumbnailDir, thumbnailFileName)
+		os.Remove(thumbnailPath)
+	}
+}
+
+func newPhotoID() string {
+	return fmt.Sprintf("photo_%d", time.Now().UnixNano())
+}
+
+func getFileExtension(mimeType string) string {
+	switch mimeType {
+	case "image/jpeg":
+		return ".jpg"
+	case "image/png":
+		return ".png"
+	case "image/webp":
+		return ".webp"
+	case "image/gif":
+		return ".gif"
+	default:
+		return ".jpg"
+	}
+}
+
+func getUserFromContext(r *http.Request) *models.User {
+	val := r.Context().Value(types.CtxKey{})
+	if user, ok := val.(*models.User); ok {
+		return user
+	}
+	return nil
+}
+
+func sanitizeInput(input string) string {
+	// Remove potential XSS patterns
+	input = strings.ReplaceAll(input, "<", "")
+	input = strings.ReplaceAll(input, ">", "")
+	input = strings.ReplaceAll(input, "&", "")
+	input = strings.ReplaceAll(input, "\"", "")
+	input = strings.ReplaceAll(input, "'", "")
+	
+	// Limit length
+	if len(input) > 500 {
+		input = input[:500]
+	}
+	
+	return strings.TrimSpace(input)
+}
+
+func writeJSON(w http.ResponseWriter, code int, v any) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(code)
+	json.NewEncoder(w).Encode(v)
+}
+
+func writeError(w http.ResponseWriter, code int, msg string) {
+	writeJSON(w, code, map[string]string{"error": msg})
+}

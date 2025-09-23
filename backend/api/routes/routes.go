@@ -20,6 +20,15 @@ type Protected struct {
 	AuthMiddleware func(http.Handler) http.Handler
 }
 
+// PhotoHandlers bundles photo-related handler functions.
+type PhotoHandlers struct {
+	UploadPhoto   http.HandlerFunc
+	GetPhotoFeed  http.HandlerFunc
+	GetPhoto      http.HandlerFunc
+	DeletePhoto   http.HandlerFunc
+	AuthMiddleware func(http.Handler) http.Handler
+}
+
 // RegisterHealthRoutes registers the health endpoint.
 func RegisterHealthRoutes(r chi.Router, healthHandler http.HandlerFunc) {
 	r.Get("/health", healthHandler)
@@ -39,5 +48,16 @@ func RegisterProtectedRoutes(r chi.Router, p Protected) {
 	r.Group(func(r chi.Router) {
 		r.Use(p.AuthMiddleware)
 		r.Get("/me", p.Me)
+	})
+}
+
+// RegisterPhotoRoutes registers photo endpoints under auth middleware.
+func RegisterPhotoRoutes(r chi.Router, h PhotoHandlers) {
+	r.Group(func(r chi.Router) {
+		r.Use(h.AuthMiddleware)
+		r.Post("/photos/upload", h.UploadPhoto)
+		r.Get("/photos/feed", h.GetPhotoFeed)
+		r.Get("/photos/", h.GetPhoto) // ?id=photo_id
+		r.Delete("/photos/", h.DeletePhoto) // ?id=photo_id
 	})
 }
