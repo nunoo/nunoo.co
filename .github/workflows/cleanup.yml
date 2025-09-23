@@ -18,17 +18,17 @@ jobs:
           script: |
             const owner = context.repo.owner;
             const repo = context.repo.repo;
-            
+
             // Get all artifacts
             const artifacts = await github.rest.actions.listArtifactsForRepo({
               owner,
               repo,
               per_page: 100
             });
-            
+
             const thirtyDaysAgo = new Date();
             thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-            
+
             // Delete artifacts older than 30 days
             for (const artifact of artifacts.data.artifacts) {
               const createdAt = new Date(artifact.created_at);
@@ -54,7 +54,7 @@ jobs:
           script: |
             const owner = context.repo.owner;
             const packageName = `${context.repo.repo}-backend`;
-            
+
             try {
               // Get all package versions
               const packages = await github.rest.packages.getAllPackageVersionsForPackageOwnedByOrg({
@@ -98,16 +98,16 @@ jobs:
           script: |
             const owner = context.repo.owner;
             const repo = context.repo.repo;
-            
+
             // Get all workflows
             const workflows = await github.rest.actions.listRepoWorkflows({
               owner,
               repo
             });
-            
+
             const sixtyDaysAgo = new Date();
             sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - 60);
-            
+
             for (const workflow of workflows.data.workflows) {
               let page = 1;
               let runs;

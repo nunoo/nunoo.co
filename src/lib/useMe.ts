@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 type MeResponse = { user: { id: string; email: string } | null };
 
 export function useMe() {
-  const [user, setUser] = useState<MeResponse["user"]>(null);
+  const [user, setUser] = useState<MeResponse['user']>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 

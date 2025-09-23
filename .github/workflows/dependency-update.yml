@@ -53,11 +53,11 @@ jobs:
           title: 'chore: update npm dependencies'
           body: |
             This PR updates npm dependencies to their latest minor versions.
-            
+
             Changes made:
             - Updated package.json with latest minor versions
             - Verified build and lint passes
-            
+
             Please review the changes before merging.
           branch: chore/update-npm-dependencies
           delete-branch: true
@@ -107,11 +107,11 @@ jobs:
           title: 'chore: update go dependencies'
           body: |
             This PR updates Go dependencies to their latest versions.
-            
+
             Changes made:
             - Updated go.mod and go.sum
             - Verified tests and build pass
-            
+
             Please review the changes before merging.
           branch: chore/update-go-dependencies
           delete-branch: true

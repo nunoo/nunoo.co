@@ -5,6 +5,7 @@ This repository includes comprehensive GitHub Actions workflows for CI/CD, secur
 ## Workflows Overview
 
 ### 1. CI Pipeline (`ci.yml`)
+
 - **Triggers**: Push to main/develop, PRs to main/develop
 - **Features**:
   - Frontend: Lint, format check, type check, build
@@ -14,6 +15,7 @@ This repository includes comprehensive GitHub Actions workflows for CI/CD, secur
   - Codecov integration for coverage reporting
 
 ### 2. Build and Deploy (`deploy.yml`)
+
 - **Triggers**: Push to main branch
 - **Features**:
   - Frontend build and Netlify deployment
@@ -23,6 +25,7 @@ This repository includes comprehensive GitHub Actions workflows for CI/CD, secur
   - Production deployment placeholder
 
 ### 3. Security Scanning (`security.yml`)
+
 - **Triggers**: Push, PRs, daily schedule
 - **Features**:
   - CodeQL analysis for JavaScript/TypeScript and Go
@@ -33,6 +36,7 @@ This repository includes comprehensive GitHub Actions workflows for CI/CD, secur
   - SARIF uploads to GitHub Security tab
 
 ### 4. Dependency Updates (`dependency-update.yml`)
+
 - **Triggers**: Weekly schedule (Mondays), manual
 - **Features**:
   - Automated npm dependency updates (minor versions)
@@ -41,6 +45,7 @@ This repository includes comprehensive GitHub Actions workflows for CI/CD, secur
   - Separate workflows for npm and Go dependencies
 
 ### 5. Performance Testing (`performance.yml`)
+
 - **Triggers**: Push to main, PRs, daily schedule
 - **Features**:
   - Lighthouse performance audits
@@ -49,7 +54,8 @@ This repository includes comprehensive GitHub Actions workflows for CI/CD, secur
   - Performance thresholds and reporting
 
 ### 6. Release (`release.yml`)
-- **Triggers**: Git tags (v*), manual with version input
+
+- **Triggers**: Git tags (v\*), manual with version input
 - **Features**:
   - Multi-platform binary builds (Linux, macOS, Windows)
   - Docker image builds with semantic versioning
@@ -57,6 +63,7 @@ This repository includes comprehensive GitHub Actions workflows for CI/CD, secur
   - Release asset uploads
 
 ### 7. Cleanup (`cleanup.yml`)
+
 - **Triggers**: Weekly schedule (Sundays), manual
 - **Features**:
   - Cleanup old workflow artifacts (>30 days)

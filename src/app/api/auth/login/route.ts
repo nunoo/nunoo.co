@@ -10,9 +10,10 @@ import {
 } from '@/lib/auth';
 
 export async function POST(req: NextRequest) {
-  const body = (await req.json().catch(() => null)) as
-    | { email?: string; password?: string }
-    | null;
+  const body = (await req.json().catch(() => null)) as {
+    email?: string;
+    password?: string;
+  } | null;
   if (!body?.email || !body?.password) {
     return NextResponse.json(
       { error: 'email and password required' },
@@ -28,8 +29,9 @@ export async function POST(req: NextRequest) {
     cache: 'no-store',
   });
 
-  const data = (await res.json().catch(() => ({}))) as Partial<TokenResponse> &
-    { error?: string };
+  const data = (await res
+    .json()
+    .catch(() => ({}))) as Partial<TokenResponse> & { error?: string };
   if (!res.ok || !data.access_token || !data.refresh_token) {
     return NextResponse.json(
       { error: data?.error || 'invalid credentials' },
