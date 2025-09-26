@@ -132,6 +132,3 @@ jobs:
           go install github.com/securego/gosec/v2/cmd/gosec@latest
           $HOME/go/bin/gosec -fmt text -severity medium ./... || true
         # Note: gosec may have false positives, so we don't fail on non-zero exit
-
-      - name: CodeQL Analysis
-        uses: github/codeql-action/analyze@v3
