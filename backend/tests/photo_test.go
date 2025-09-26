@@ -87,11 +87,20 @@ func TestPhotoUpload(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		part.Write(testImage)
+		_, err = part.Write(testImage)
+		if err != nil {
+			t.Fatal(err)
+		}
 
 		// Add caption
-		writer.WriteField("caption", "Test photo caption")
-		writer.Close()
+		err = writer.WriteField("caption", "Test photo caption")
+		if err != nil {
+			t.Fatal(err)
+		}
+		err = writer.Close()
+		if err != nil {
+			t.Fatal(err)
+		}
 
 		req := httptest.NewRequest("POST", "/photos/upload", body)
 		req.Header.Set("Content-Type", writer.FormDataContentType())
@@ -157,8 +166,14 @@ func TestPhotoUpload(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		part.Write(testImage)
-		writer.Close()
+		_, err = part.Write(testImage)
+		if err != nil {
+			t.Fatal(err)
+		}
+		err = writer.Close()
+		if err != nil {
+			t.Fatal(err)
+		}
 
 		req := httptest.NewRequest("POST", "/photos/upload", body)
 		req.Header.Set("Content-Type", writer.FormDataContentType())
@@ -184,8 +199,14 @@ func TestPhotoUpload(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		part.Write(largeImage)
-		writer.Close()
+		_, err = part.Write(largeImage)
+		if err != nil {
+			t.Fatal(err)
+		}
+		err = writer.Close()
+		if err != nil {
+			t.Fatal(err)
+		}
 
 		req := httptest.NewRequest("POST", "/photos/upload", body)
 		req.Header.Set("Content-Type", writer.FormDataContentType())

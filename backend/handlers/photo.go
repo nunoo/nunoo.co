@@ -39,10 +39,16 @@ type PhotoHandlers struct {
 }
 
 func NewPhotoHandlers(photos repository.PhotoRepository) *PhotoHandlers {
-	os.MkdirAll(UploadDir, 0755)
-	os.MkdirAll(ThumbnailDir, 0755)
-
 	logger, _ := zap.NewProduction()
+
+	err := os.MkdirAll(UploadDir, 0755)
+	if err != nil {
+		logger.Error("failed to create upload directory", zap.Error(err))
+	}
+	err = os.MkdirAll(ThumbnailDir, 0755)
+	if err != nil {
+		logger.Error("failed to create thumbnail directory", zap.Error(err))
+	}
 
 	return &PhotoHandlers{
 		photos: photos,
@@ -69,7 +75,11 @@ func (h *PhotoHandlers) UploadPhoto(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, "photo file is required")
 		return
 	}
-	defer file.Close()
+	defer func() {
+		if err := file.Close(); err != nil {
+			fmt.Println("failed to close file", zap.Error(err))
+		}
+	}()
 
 	if header.Size > MaxFileSize {
 		writeError(w, http.StatusBadRequest, "file too large (max 20MB)")
@@ -83,7 +93,9 @@ func (h *PhotoHandlers) UploadPhoto(w http.ResponseWriter, r *http.Request) {
 		buf := make([]byte, 512)
 		n, _ := file.Read(buf)
 		mimeType = http.DetectContentType(buf[:n])
-		file.Seek(0, 0) // Reset file pointer
+		if _, err := file.Seek(0, 0); err != nil {
+			fmt.Println("failed to reset file pointer", zap.Error(err))
+		}
 	}
 
 	if !allowedMimeTypes[mimeType] {
@@ -97,7 +109,9 @@ func (h *PhotoHandlers) UploadPhoto(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusInternalServerError, "failed to read file")
 		return
 	}
-	file.Seek(0, 0) // Reset file pointer
+	if _, err := file.Seek(0, 0); err != nil {
+		fmt.Println("failed to reset file pointer", zap.Error(err))
+	}
 
 	// Security validation
 	if err := ValidateImageFile(fileContent); err != nil {
@@ -244,7 +258,11 @@ func (h *PhotoHandlers) savePhoto(file multipart.File, header *multipart.FileHea
 	if err != nil {
 		return nil, err
 	}
-	defer dst.Close()
+	defer func() {
+		if err := dst.Close(); err != nil {
+			fmt.Println("failed to close destination file", zap.Error(err))
+		}
+	}()
 
 	if _, err := io.Copy(dst, file); err != nil {
 		return nil, err
@@ -267,12 +285,16 @@ func (h *PhotoHandlers) savePhoto(file multipart.File, header *multipart.FileHea
 
 func (h *PhotoHandlers) deletePhotoFiles(photo *models.Photo) {
 	originalPath := filepath.Join(UploadDir, photo.FileName)
-	os.Remove(originalPath)
+	if err := os.Remove(originalPath); err != nil {
+		fmt.Println("failed to remove original file", zap.Error(err))
+	}
 
 	if photo.ThumbnailURL != "" {
 		thumbnailFileName := strings.TrimPrefix(photo.ThumbnailURL, "/uploads/thumbnails/")
 		thumbnailPath := filepath.Join(ThumbnailDir, thumbnailFileName)
-		os.Remove(thumbnailPath)
+		if err := os.Remove(thumbnailPath); err != nil {
+			fmt.Println("failed to remove thumbnail file", zap.Error(err))
+		}
 	}
 }
 
@@ -322,7 +344,9 @@ func sanitizeInput(input string) string {
 func writeJSON(w http.ResponseWriter, code int, v any) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(code)
-	json.NewEncoder(w).Encode(v)
+	if err := json.NewEncoder(w).Encode(v); err != nil {
+		fmt.Println("failed to write JSON", zap.Error(err))
+	}
 }
 
 func writeError(w http.ResponseWriter, code int, msg string) {

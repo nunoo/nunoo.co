@@ -9,6 +9,8 @@ import (
 	"path/filepath"
 	"sort"
 	"time"
+
+	"go.uber.org/zap"
 )
 
 // Apply runs .sql files in dir in lexicographic order, once each.
@@ -74,7 +76,11 @@ func loadApplied(db *sql.DB) (map[string]bool, error) {
 	if err != nil {
 		return map[string]bool{}, nil
 	} // table may not exist yet; ignore
-	defer rows.Close()
+	defer func() {
+		if err := rows.Close(); err != nil {
+			fmt.Println("failed to close rows", zap.Error(err))
+		}
+	}()
 	m := map[string]bool{}
 	for rows.Next() {
 		var n string

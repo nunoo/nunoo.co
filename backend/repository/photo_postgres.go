@@ -3,7 +3,9 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"fmt"
 
+	"go.uber.org/zap"
 	"nunoo.co/backend/models"
 )
 
@@ -77,9 +79,9 @@ func (r *PostgresPhotoRepo) GetByUserID(ctx context.Context, userID string, page
 	offset := (page - 1) * limit
 	query := `
 		SELECT id, user_id, file_name, original_url, thumbnail_url, caption, file_size, mime_type, width, height, created_at, updated_at
-		FROM photos 
-		WHERE user_id = $1 
-		ORDER BY created_at DESC 
+		FROM photos
+		WHERE user_id = $1
+		ORDER BY created_at DESC
 		LIMIT $2 OFFSET $3
 	`
 
@@ -87,7 +89,11 @@ func (r *PostgresPhotoRepo) GetByUserID(ctx context.Context, userID string, page
 	if err != nil {
 		return nil, 0, err
 	}
-	defer rows.Close()
+	defer func() {
+		if err := rows.Close(); err != nil {
+			fmt.Println("failed to close rows", zap.Error(err))
+		}
+	}()
 
 	var photos []models.Photo
 	for rows.Next() {
@@ -125,8 +131,8 @@ func (r *PostgresPhotoRepo) GetByUserID(ctx context.Context, userID string, page
 
 func (r *PostgresPhotoRepo) Update(ctx context.Context, photo *models.Photo) error {
 	query := `
-		UPDATE photos 
-		SET file_name = $2, original_url = $3, thumbnail_url = $4, caption = $5, 
+		UPDATE photos
+		SET file_name = $2, original_url = $3, thumbnail_url = $4, caption = $5,
 		    file_size = $6, mime_type = $7, width = $8, height = $9, updated_at = $10
 		WHERE id = $1
 	`
@@ -170,7 +176,11 @@ func (r *PostgresPhotoRepo) GetAll(ctx context.Context, page, limit int) ([]mode
 	if err != nil {
 		return nil, 0, err
 	}
-	defer rows.Close()
+	defer func() {
+		if err := rows.Close(); err != nil {
+			fmt.Println("failed to close rows", zap.Error(err))
+		}
+	}()
 
 	var photos []models.Photo
 	for rows.Next() {
