@@ -25,10 +25,7 @@ export async function GET(request: NextRequest) {
       .single();
 
     if (error || !photo) {
-      return NextResponse.json(
-        { error: 'Photo not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Photo not found' }, { status: 404 });
     }
 
     return NextResponse.json({ photo }, { status: 200 });
@@ -67,7 +64,10 @@ export async function DELETE(request: NextRequest) {
     const supabase = createServerSupabaseClient();
 
     // Get user from token
-    const { data: { user }, error: userError } = await supabase.auth.getUser(accessToken);
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser(accessToken);
 
     if (userError || !user) {
       return NextResponse.json(
@@ -84,10 +84,7 @@ export async function DELETE(request: NextRequest) {
       .single();
 
     if (fetchError || !photo) {
-      return NextResponse.json(
-        { error: 'Photo not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Photo not found' }, { status: 404 });
     }
 
     // Check if user owns the photo

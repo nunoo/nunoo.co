@@ -11,10 +11,7 @@ export async function POST(request: NextRequest) {
     const caption = (formData.get('caption') as string) || '';
 
     if (!file) {
-      return NextResponse.json(
-        { error: 'No file uploaded' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
     }
 
     // Check file size (20MB limit)
@@ -39,7 +36,10 @@ export async function POST(request: NextRequest) {
     const supabase = createServerSupabaseClient();
 
     // Get user from token
-    const { data: { user }, error: userError } = await supabase.auth.getUser(accessToken);
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser(accessToken);
 
     if (userError || !user) {
       return NextResponse.json(
@@ -50,14 +50,16 @@ export async function POST(request: NextRequest) {
 
     // Create unique filename
     const fileExt = file.name.split('.').pop();
-    const fileName = `${user.id}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+    const fileName = `${user.id}/${Date.now()}-${Math.random()
+      .toString(36)
+      .substring(7)}.${fileExt}`;
 
     // Upload to Supabase Storage
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from('photos')
       .upload(fileName, file, {
         cacheControl: '3600',
-        upsert: false
+        upsert: false,
       });
 
     if (uploadError) {
@@ -69,9 +71,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Get public URL
-    const { data: { publicUrl } } = supabase.storage
-      .from('photos')
-      .getPublicUrl(fileName);
+    const {
+      data: { publicUrl },
+    } = supabase.storage.from('photos').getPublicUrl(fileName);
 
     // Save photo metadata to database
     const photoData = {

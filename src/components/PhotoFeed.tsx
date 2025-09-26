@@ -33,7 +33,11 @@ interface PhotoFeedProps {
   isAdmin?: boolean;
 }
 
-export function PhotoFeed({ refreshTrigger, onError, isAdmin = false }: PhotoFeedProps) {
+export function PhotoFeed({
+  refreshTrigger,
+  onError,
+  isAdmin = false,
+}: PhotoFeedProps) {
   const [feed, setFeed] = useState<PhotoFeed | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -199,7 +203,12 @@ export function PhotoFeed({ refreshTrigger, onError, isAdmin = false }: PhotoFee
 
       <div className='space-y-8'>
         {feed.photos.map((photo) => (
-          <PhotoCard key={photo.id} photo={photo} onDelete={deletePhoto} showDeleteButton={isAdmin} />
+          <PhotoCard
+            key={photo.id}
+            photo={photo}
+            onDelete={deletePhoto}
+            showDeleteButton={isAdmin}
+          />
         ))}
       </div>
 
@@ -224,7 +233,11 @@ interface PhotoCardProps {
   showDeleteButton?: boolean;
 }
 
-function PhotoCard({ photo, onDelete, showDeleteButton = false }: PhotoCardProps) {
+function PhotoCard({
+  photo,
+  onDelete,
+  showDeleteButton = false,
+}: PhotoCardProps) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
@@ -254,30 +267,9 @@ function PhotoCard({ photo, onDelete, showDeleteButton = false }: PhotoCardProps
         {showDeleteButton && (
           <div className='absolute right-2 top-2 opacity-0 transition-opacity group-hover:opacity-100'>
             {!showDeleteConfirm ? (
-            <button
-              onClick={() => setShowDeleteConfirm(true)}
-              className='rounded-full bg-black/50 p-2 text-white transition-colors hover:bg-black/70'
-            >
-              <svg
-                className='h-4 w-4'
-                fill='none'
-                stroke='currentColor'
-                viewBox='0 0 24 24'
-              >
-                <path
-                  strokeLinecap='round'
-                  strokeLinejoin='round'
-                  strokeWidth='2'
-                  d='M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16'
-                />
-              </svg>
-            </button>
-          ) : (
-            <div className='flex gap-1'>
               <button
-                onClick={handleDelete}
-                disabled={deleting}
-                className='rounded-full bg-red-600 p-2 text-white transition-colors hover:bg-red-700 disabled:opacity-50'
+                onClick={() => setShowDeleteConfirm(true)}
+                className='rounded-full bg-black/50 p-2 text-white transition-colors hover:bg-black/70'
               >
                 <svg
                   className='h-4 w-4'
@@ -289,29 +281,50 @@ function PhotoCard({ photo, onDelete, showDeleteButton = false }: PhotoCardProps
                     strokeLinecap='round'
                     strokeLinejoin='round'
                     strokeWidth='2'
-                    d='M5 13l4 4L19 7'
+                    d='M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16'
                   />
                 </svg>
               </button>
-              <button
-                onClick={() => setShowDeleteConfirm(false)}
-                disabled={deleting}
-                className='rounded-full bg-black/50 p-2 text-white transition-colors hover:bg-black/70 disabled:opacity-50'
-              >
-                <svg
-                  className='h-4 w-4'
-                  fill='none'
-                  stroke='currentColor'
-                  viewBox='0 0 24 24'
+            ) : (
+              <div className='flex gap-1'>
+                <button
+                  onClick={handleDelete}
+                  disabled={deleting}
+                  className='rounded-full bg-red-600 p-2 text-white transition-colors hover:bg-red-700 disabled:opacity-50'
                 >
-                  <path
-                    strokeLinecap='round'
-                    strokeLinejoin='round'
-                    strokeWidth='2'
-                    d='M6 18L18 6M6 6l12 12'
-                  />
-                </svg>
-              </button>
+                  <svg
+                    className='h-4 w-4'
+                    fill='none'
+                    stroke='currentColor'
+                    viewBox='0 0 24 24'
+                  >
+                    <path
+                      strokeLinecap='round'
+                      strokeLinejoin='round'
+                      strokeWidth='2'
+                      d='M5 13l4 4L19 7'
+                    />
+                  </svg>
+                </button>
+                <button
+                  onClick={() => setShowDeleteConfirm(false)}
+                  disabled={deleting}
+                  className='rounded-full bg-black/50 p-2 text-white transition-colors hover:bg-black/70 disabled:opacity-50'
+                >
+                  <svg
+                    className='h-4 w-4'
+                    fill='none'
+                    stroke='currentColor'
+                    viewBox='0 0 24 24'
+                  >
+                    <path
+                      strokeLinecap='round'
+                      strokeLinejoin='round'
+                      strokeWidth='2'
+                      d='M6 18L18 6M6 6l12 12'
+                    />
+                  </svg>
+                </button>
               </div>
             )}
           </div>
@@ -333,7 +346,7 @@ function PhotoCard({ photo, onDelete, showDeleteButton = false }: PhotoCardProps
               {new Date(photo.created_at).toLocaleTimeString('en-US', {
                 hour: 'numeric',
                 minute: '2-digit',
-                hour12: true
+                hour12: true,
               })}
             </p>
             <p className='text-sm text-zinc-500 dark:text-zinc-500'>

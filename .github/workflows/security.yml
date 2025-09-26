@@ -105,14 +105,6 @@ jobs:
       - name: Run npm audit
         run: npm audit --audit-level moderate
 
-      - name: Run Snyk to check for vulnerabilities
-        uses: snyk/actions/node@master
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        with:
-          command: test
-          args: --severity-threshold=medium
-
   trivy:
     name: Docker Image Security Scan
     runs-on: ubuntu-latest

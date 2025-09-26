@@ -28,7 +28,10 @@ export default function PhotosPage() {
                 Photos
               </h1>
               <p className='text-xl font-light leading-relaxed text-zinc-600 md:text-2xl dark:text-zinc-400'>
-                Capturing moments, sharing memories through beautiful imagery
+                Life through my eyes
+              </p>
+              <p className='text-xl font-light leading-relaxed text-zinc-600 md:text-2xl dark:text-zinc-400'>
+                All photos were taken with a Ricoh GR IIIx.
               </p>
             </div>
 
@@ -70,16 +73,6 @@ export default function PhotosPage() {
                 <div className='relative z-10'>
                   <PhotoFeed onError={handleFeedError} />
                 </div>
-              </div>
-
-              {/* Admin Link (subtle) */}
-              <div className='text-center pt-8'>
-                <a
-                  href='/admin'
-                  className='text-xs text-zinc-400 transition-colors duration-200 hover:text-zinc-600 dark:text-zinc-600 dark:hover:text-zinc-400'
-                >
-                  Admin Access
-                </a>
               </div>
             </div>
           </Container>

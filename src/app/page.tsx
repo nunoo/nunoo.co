@@ -22,7 +22,6 @@ import image2 from '@/images/photos/image-2.jpg';
 import image3 from '@/images/photos/image-3.jpg';
 import image4 from '@/images/photos/image-4.jpg';
 import image5 from '@/images/photos/image-5.jpg';
-import { type ArticleWithSlug, getAllArticles } from '@/lib/articles';
 import { formatDate } from '@/lib/formatDate';
 
 function MailIcon(props: React.ComponentPropsWithoutRef<'svg'>) {
@@ -81,21 +80,6 @@ function ArrowDownIcon(props: React.ComponentPropsWithoutRef<'svg'>) {
         strokeLinejoin='round'
       />
     </svg>
-  );
-}
-
-function Article({ article }: { article: ArticleWithSlug }) {
-  return (
-    <Card as='article'>
-      <Card.Title href={`/articles/${article.slug}`}>
-        {article.title}
-      </Card.Title>
-      <Card.Eyebrow as='time' dateTime={article.date} decorate>
-        {formatDate(article.date)}
-      </Card.Eyebrow>
-      <Card.Description>{article.description}</Card.Description>
-      <Card.Cta>Read article</Card.Cta>
-    </Card>
   );
 }
 
@@ -270,8 +254,6 @@ function Photos() {
 }
 
 export default async function Home() {
-  let articles = (await getAllArticles()).slice(0, 4);
-
   return (
     <>
       <PageBackground />
@@ -337,11 +319,11 @@ export default async function Home() {
 
             {/* Subtitle with Modern Typography */}
             <p className='mx-auto mb-10 max-w-5xl text-xl font-light leading-relaxed text-zinc-600 sm:text-2xl lg:text-3xl xl:text-4xl dark:text-zinc-400'>
-              Crafting digital experiences that bridge creativity and technology
+              Life through my eyes
             </p>
 
             {/* Enhanced Social Links */}
-            <div className='mb-12 flex justify-center gap-8 sm:gap-10'>
+            {/* <div className='mb-12 flex justify-center gap-8 sm:gap-10'>
               <SocialLink
                 href='https://github.com/nunoo'
                 aria-label='Follow on GitHub'
@@ -352,15 +334,15 @@ export default async function Home() {
                 aria-label='Follow on LinkedIn'
                 icon={LinkedInIcon}
               />
-            </div>
+            </div> */}
 
             {/* Floating Call-to-Action */}
             <div className='animate-float'>
               <Button
-                href='/about'
+                href='/photos'
                 className='rounded-full bg-gradient-to-r from-blue-600 to-purple-600 px-8 py-4 text-lg font-medium text-white shadow-2xl transition-all duration-300 hover:scale-105 hover:from-blue-700 hover:to-purple-700 hover:shadow-blue-500/25 sm:px-10 sm:py-5 sm:text-xl'
               >
-                Discover My Work
+                Photos
               </Button>
             </div>
           </div>
@@ -373,10 +355,9 @@ export default async function Home() {
       </div>
 
       {/* Content Sections */}
-      <Container className='py-16 sm:py-24'>
+      {/* <Container className='py-16 sm:py-24'>
         <div className='mx-auto max-w-6xl'>
           <div className='mb-16 grid grid-cols-1 gap-6 sm:mb-24 sm:gap-8 lg:grid-cols-3'>
-            {/* Feature Cards */}
             <div className='group relative overflow-hidden rounded-2xl border border-zinc-200/50 bg-white/70 p-6 backdrop-blur-sm transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl hover:shadow-blue-500/10 sm:rounded-3xl sm:p-8 dark:border-zinc-700/50 dark:bg-zinc-900/70'>
               <div className='absolute inset-0 bg-gradient-to-br from-blue-500/5 to-purple-500/5 opacity-0 transition-opacity duration-300 group-hover:opacity-100' />
               <div className='relative z-10'>
@@ -416,27 +397,8 @@ export default async function Home() {
               </div>
             </div>
           </div>
-
-          {/* Optional: Featured Articles Section */}
-          {articles.length > 0 && (
-            <div className='text-center'>
-              <h2 className='mb-8 text-2xl font-bold text-zinc-800 sm:mb-12 sm:text-3xl dark:text-zinc-100'>
-                Latest Thoughts
-              </h2>
-              <div className='grid grid-cols-1 gap-6 sm:gap-8 md:grid-cols-2'>
-                {articles.slice(0, 2).map((article) => (
-                  <div
-                    key={article.slug}
-                    className='group relative overflow-hidden rounded-xl border border-zinc-200/50 bg-white/50 p-4 backdrop-blur-sm transition-all duration-300 hover:scale-[1.02] sm:rounded-2xl sm:p-6 dark:border-zinc-700/50 dark:bg-zinc-900/50'
-                  >
-                    <Article article={article} />
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
-      </Container>
+      </Container> */}
     </>
   );
 }

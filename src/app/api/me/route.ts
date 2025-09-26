@@ -15,18 +15,24 @@ export async function GET(_: NextRequest) {
     const supabase = createServerSupabaseClient();
 
     // Get user from access token
-    const { data: { user }, error } = await supabase.auth.getUser(accessToken);
+    const {
+      data: { user },
+      error,
+    } = await supabase.auth.getUser(accessToken);
 
     if (error || !user) {
       return NextResponse.json({ user: null }, { status: 200 });
     }
 
-    return NextResponse.json({
-      user: {
-        id: user.id,
-        email: user.email
-      }
-    }, { status: 200 });
+    return NextResponse.json(
+      {
+        user: {
+          id: user.id,
+          email: user.email,
+        },
+      },
+      { status: 200 }
+    );
   } catch (error) {
     console.error('Get user error:', error);
     return NextResponse.json({ user: null }, { status: 200 });

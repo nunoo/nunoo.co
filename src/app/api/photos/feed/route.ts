@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
     }
 
     const totalCount = count || 0;
-    const hasMore = (page * limit) < totalCount;
+    const hasMore = page * limit < totalCount;
 
     const feed: PhotoFeed = {
       photos: photos || [],

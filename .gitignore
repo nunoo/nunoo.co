@@ -26,6 +26,8 @@ yarn-error.log*
 
 # local env files
 .env*.local
+.env
+backend/.env
 
 # vercel
 .vercel
@@ -35,8 +37,14 @@ yarn-error.log*
 next-env.d.ts
 
 
+# Go binaries
 backend/server
-create-admin.sh
+backend/nunoo-backend
+backend/nunoo-backend-*
+backend/*.exe
+*.exe
 
+# Scripts
+create-admin.sh
 setup-admin
 setup-admin.go

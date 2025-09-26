@@ -72,11 +72,13 @@ Once your account is created:
 ## Troubleshooting
 
 ### Can't login?
+
 - Ensure you checked "Auto Confirm Email" when creating the user
 - Check that your password is correct
 - Verify the user appears in Supabase Dashboard → Authentication → Users
 
 ### Upload fails?
+
 - Check that the storage bucket named `photos` exists and is public
 - Ensure your environment variables are set correctly in Vercel
 - Verify you're logged in (check for cookies in browser dev tools)

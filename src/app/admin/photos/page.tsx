@@ -114,8 +114,18 @@ export default function AdminPhotosPage() {
                           onClick={() => setUploadSuccess(null)}
                           className='text-green-600 transition-colors duration-200 hover:text-green-800 dark:text-green-400 dark:hover:text-green-200'
                         >
-                          <svg className='h-5 w-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                            <path strokeLinecap='round' strokeLinejoin='round' strokeWidth='2' d='M6 18L18 6M6 6l12 12' />
+                          <svg
+                            className='h-5 w-5'
+                            fill='none'
+                            stroke='currentColor'
+                            viewBox='0 0 24 24'
+                          >
+                            <path
+                              strokeLinecap='round'
+                              strokeLinejoin='round'
+                              strokeWidth='2'
+                              d='M6 18L18 6M6 6l12 12'
+                            />
                           </svg>
                         </button>
                       </div>
@@ -136,8 +146,18 @@ export default function AdminPhotosPage() {
                           }}
                           className='text-red-600 transition-colors duration-200 hover:text-red-800 dark:text-red-400 dark:hover:text-red-200'
                         >
-                          <svg className='h-5 w-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                            <path strokeLinecap='round' strokeLinejoin='round' strokeWidth='2' d='M6 18L18 6M6 6l12 12' />
+                          <svg
+                            className='h-5 w-5'
+                            fill='none'
+                            stroke='currentColor'
+                            viewBox='0 0 24 24'
+                          >
+                            <path
+                              strokeLinecap='round'
+                              strokeLinejoin='round'
+                              strokeWidth='2'
+                              d='M6 18L18 6M6 6l12 12'
+                            />
                           </svg>
                         </button>
                       </div>
