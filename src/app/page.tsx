@@ -11,6 +11,7 @@ import {
   LinkedInIcon,
   XIcon,
 } from '@/components/SocialIcons';
+import avatarImage from '@/images/avatar.jpg';
 import logoAirbnb from '@/images/logos/airbnb.svg';
 import logoFacebook from '@/images/logos/facebook.svg';
 import logoPlanetaria from '@/images/logos/planetaria.svg';
@@ -105,7 +106,7 @@ function SocialLink({
 }) {
   return (
     <Link className='group -m-1 p-1' {...props}>
-      <Icon className='h-6 w-6 fill-zinc-500 transition group-hover:fill-zinc-600 dark:fill-zinc-400 dark:group-hover:fill-zinc-300' />
+      <Icon className='h-8 w-8 fill-zinc-500 transition-all duration-300 group-hover:scale-110 group-hover:fill-zinc-600 dark:fill-zinc-400 dark:group-hover:fill-zinc-300' />
     </Link>
   );
 }
@@ -114,7 +115,7 @@ function Newsletter() {
   return (
     <form
       action='/thank-you'
-      className='rounded-2xl border border-zinc-100 p-6 dark:border-zinc-700/40'
+      className='rounded-3xl border border-zinc-100/50 bg-white/50 p-8 backdrop-blur-sm dark:border-zinc-700/40 dark:bg-zinc-900/50'
     >
       <h2 className='flex text-sm font-semibold text-zinc-900 dark:text-zinc-100'>
         <MailIcon className='h-6 w-6 flex-none' />
@@ -129,9 +130,9 @@ function Newsletter() {
           placeholder='Email address'
           aria-label='Email address'
           required
-          className='min-w-0 flex-auto appearance-none rounded-md border border-zinc-900/10 bg-white px-3 py-[calc(theme(spacing.2)-1px)] shadow-md shadow-zinc-800/5 placeholder:text-zinc-400 focus:border-teal-500 focus:outline-none focus:ring-4 focus:ring-teal-500/10 sm:text-sm dark:border-zinc-700 dark:bg-zinc-700/[0.15] dark:text-zinc-200 dark:placeholder:text-zinc-500 dark:focus:border-teal-400 dark:focus:ring-teal-400/10'
+          className='min-w-0 flex-auto appearance-none rounded-xl border border-zinc-900/10 bg-white/80 px-4 py-3 shadow-lg shadow-zinc-800/5 backdrop-blur-sm placeholder:text-zinc-400 focus:border-teal-500 focus:outline-none focus:ring-4 focus:ring-teal-500/10 sm:text-sm dark:border-zinc-700 dark:bg-zinc-700/50 dark:text-zinc-200 dark:placeholder:text-zinc-500 dark:focus:border-teal-400 dark:focus:ring-teal-400/10'
         />
-        <Button type='submit' className='ml-4 flex-none'>
+        <Button type='submit' className='ml-4 flex-none rounded-xl'>
           Join
         </Button>
       </div>
@@ -158,7 +159,7 @@ function Role({ role }: { role: Role }) {
 
   return (
     <li className='flex gap-4'>
-      <div className='relative mt-1 flex h-10 w-10 flex-none items-center justify-center rounded-full shadow-md shadow-zinc-800/5 ring-1 ring-zinc-900/5 dark:border dark:border-zinc-700/50 dark:bg-zinc-800 dark:ring-0'>
+      <div className='relative mt-1 flex h-12 w-12 flex-none items-center justify-center rounded-full shadow-lg shadow-zinc-800/5 ring-1 ring-zinc-900/5 dark:border dark:border-zinc-700/50 dark:bg-zinc-800 dark:ring-0'>
         <Image src={role.logo} alt='' className='h-7 w-7' unoptimized />
       </div>
       <dl className='flex flex-auto flex-wrap gap-x-2'>
@@ -220,7 +221,7 @@ function Resume() {
   ];
 
   return (
-    <div className='rounded-2xl border border-zinc-100 p-6 dark:border-zinc-700/40'>
+    <div className='rounded-3xl border border-zinc-100/50 bg-white/50 p-8 backdrop-blur-sm dark:border-zinc-700/40 dark:bg-zinc-900/50'>
       <h2 className='flex text-sm font-semibold text-zinc-900 dark:text-zinc-100'>
         <BriefcaseIcon className='h-6 w-6 flex-none' />
         <span className='ml-3'>Work</span>
@@ -230,10 +231,6 @@ function Resume() {
           <Role key={roleIndex} role={role} />
         ))}
       </ol>
-      {/* <Button href="#" variant="secondary" className="group mt-6 w-full">
-        Download CV
-        <ArrowDownIcon className="h-4 w-4 stroke-zinc-400 transition group-active:stroke-zinc-600 dark:group-hover:stroke-zinc-50 dark:group-active:stroke-zinc-50" />
-      </Button> */}
     </div>
   );
 }
@@ -254,7 +251,7 @@ function Photos() {
           <div
             key={image.src}
             className={clsx(
-              'relative aspect-[9/10] w-44 flex-none overflow-hidden rounded-xl bg-zinc-100 sm:w-72 sm:rounded-2xl dark:bg-zinc-800',
+              'relative aspect-[9/10] w-44 flex-none overflow-hidden rounded-3xl bg-zinc-100 transition-transform duration-300 hover:scale-105 sm:w-72 dark:bg-zinc-800',
               rotations[imageIndex % rotations.length]
             )}
           >
@@ -276,49 +273,171 @@ export default async function Home() {
 
   return (
     <>
-      <Container className='mt-9'>
-        <div className='max-w-2xl'>
-          <h1 className='text-4xl font-bold tracking-tight text-zinc-800 sm:text-5xl dark:text-zinc-100'>
-            Shawn Nunoo
-          </h1>
-          {/* <p className="mt-6 text-base text-zinc-600 dark:text-zinc-400">
-            I’m Shawn, a software designer and entrepreneur based in New York
-            City. I’m the founder and CEO of Planetaria, where we develop
-            technologies that empower regular people to explore space on their
-            own terms.
-          </p> */}
-          <div className='mt-6 flex gap-6'>
-            {/* <SocialLink href="#" aria-label="Follow on X" icon={XIcon} />
-            <SocialLink
-              href="#"
-              aria-label="Follow on Instagram"
-              icon={InstagramIcon}
-            /> */}
-            <SocialLink
-              href='https://github.com/nunoo'
-              aria-label='Follow on GitHub'
-              icon={GitHubIcon}
-            />
-            <SocialLink
-              href='https://www.linkedin.com/in/shawnnunoo/'
-              aria-label='Follow on LinkedIn'
-              icon={LinkedInIcon}
-            />
+      {/* Hero Section with Modern Background */}
+      <div className='relative flex min-h-[90vh] items-center justify-center overflow-hidden py-16 sm:py-24'>
+        {/* Animated Background Grid */}
+        <div className='absolute inset-0 animate-pulse-slow bg-cyber-grid bg-grid opacity-20' />
+
+        {/* Gradient Overlay */}
+        <div className='absolute inset-0 bg-gradient-to-br from-transparent via-blue-50/30 to-purple-50/20 dark:from-transparent dark:via-blue-950/20 dark:to-purple-950/10' />
+
+        <Container className='relative z-10 w-full'>
+          <div className='mx-auto w-full max-w-7xl text-center'>
+            {/* Integrated Profile Picture with Glowing Area */}
+            <div className='mb-12 flex justify-center'>
+              <div className='group relative'>
+                {/* Large Glow Effect - Main Background */}
+                <div className='absolute -inset-12 animate-pulse-slow rounded-full bg-gradient-to-r from-blue-500/40 via-purple-500/40 to-pink-500/40 blur-3xl transition-all duration-500 group-hover:blur-[2rem]' />
+
+                {/* Secondary Glow Layer */}
+                <div className='absolute -inset-8 animate-pulse-slow rounded-full bg-gradient-to-r from-blue-500/20 via-purple-500/20 to-pink-500/20 blur-2xl transition-all duration-500 group-hover:blur-3xl' />
+
+                {/* Profile Image Container - Centered within the glow */}
+                <div className='relative z-20 flex items-center justify-center'>
+                  <div className='relative rounded-full bg-gradient-to-r from-blue-500/30 via-purple-500/30 to-pink-500/30 p-2 backdrop-blur-sm transition-all duration-500 group-hover:from-blue-500/40 group-hover:via-purple-500/40 group-hover:to-pink-500/40'>
+                    <div className='relative overflow-hidden rounded-full bg-red-500'>
+                      <Image
+                        src={avatarImage}
+                        alt='Shawn Nunoo'
+                        width={200}
+                        height={200}
+                        className='relative z-10 h-32 w-32 rounded-full object-cover transition-all duration-500 group-hover:scale-105 sm:h-40 sm:w-40 lg:h-48 lg:w-48'
+                        priority
+                        unoptimized
+                        style={{ position: 'relative', zIndex: 10 }}
+                      />
+
+                      {/* Animated Border */}
+                      <div className='absolute inset-0 animate-gradient rounded-full border-2 border-transparent bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 bg-clip-border' />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Floating Elements - Positioned around the glow area */}
+                <div
+                  className='absolute -right-6 -top-6 h-6 w-6 animate-float rounded-full bg-blue-500/60 transition-colors duration-300 group-hover:bg-blue-400'
+                  style={{ animationDelay: '0.5s' }}
+                />
+                <div
+                  className='absolute -bottom-6 -left-6 h-5 w-5 animate-float rounded-full bg-purple-500/60 transition-colors duration-300 group-hover:bg-purple-400'
+                  style={{ animationDelay: '1s' }}
+                />
+                <div
+                  className='absolute -right-8 top-1/2 h-4 w-4 animate-float rounded-full bg-pink-500/60 transition-colors duration-300 group-hover:bg-pink-400'
+                  style={{ animationDelay: '1.5s' }}
+                />
+                <div
+                  className='absolute -left-8 top-1/3 h-3 w-3 animate-float rounded-full bg-cyan-500/60 transition-colors duration-300 group-hover:bg-cyan-400'
+                  style={{ animationDelay: '2s' }}
+                />
+              </div>
+            </div>
+
+            {/* Main Heading with Gradient Text */}
+            <h1 className='mb-8 animate-gradient bg-gradient-to-r from-zinc-800 via-zinc-600 to-zinc-800 bg-clip-text text-5xl font-bold tracking-tight text-transparent sm:text-6xl lg:text-8xl xl:text-9xl dark:from-zinc-100 dark:via-zinc-300 dark:to-zinc-100'>
+              Shawn Nunoo
+            </h1>
+
+            {/* Subtitle with Modern Typography */}
+            <p className='mx-auto mb-10 max-w-5xl text-xl font-light leading-relaxed text-zinc-600 sm:text-2xl lg:text-3xl xl:text-4xl dark:text-zinc-400'>
+              Crafting digital experiences that bridge creativity and technology
+            </p>
+
+            {/* Enhanced Social Links */}
+            <div className='mb-12 flex justify-center gap-8 sm:gap-10'>
+              <SocialLink
+                href='https://github.com/nunoo'
+                aria-label='Follow on GitHub'
+                icon={GitHubIcon}
+              />
+              <SocialLink
+                href='https://www.linkedin.com/in/shawnnunoo/'
+                aria-label='Follow on LinkedIn'
+                icon={LinkedInIcon}
+              />
+            </div>
+
+            {/* Floating Call-to-Action */}
+            <div className='animate-float'>
+              <Button
+                href='/about'
+                className='rounded-full bg-gradient-to-r from-blue-600 to-purple-600 px-8 py-4 text-lg font-medium text-white shadow-2xl transition-all duration-300 hover:scale-105 hover:from-blue-700 hover:to-purple-700 hover:shadow-blue-500/25 sm:px-10 sm:py-5 sm:text-xl'
+              >
+                Discover My Work
+              </Button>
+            </div>
           </div>
+        </Container>
+
+        {/* Scroll Indicator */}
+        <div className='absolute bottom-8 left-1/2 -translate-x-1/2 transform animate-bounce'>
+          <ArrowDownIcon className='h-6 w-6 text-zinc-400 sm:h-8 sm:w-8 dark:text-zinc-500' />
         </div>
-      </Container>
-      {/* <Photos /> */}
-      <Container className='mt-24 md:mt-28'>
-        <div className='mx-auto grid max-w-xl grid-cols-1 gap-y-20 lg:max-w-none lg:grid-cols-2'>
-          {/* <div className="flex flex-col gap-16">
-            {articles.map((article) => (
-              <Article key={article.slug} article={article} />
-            ))}
-          </div> */}
-          <div className='space-y-10 lg:pl-16 xl:pl-24'>
-            {/* <Newsletter /> */}
-            {/* <Resume /> */}
+      </div>
+
+      {/* Content Sections */}
+      <Container className='py-16 sm:py-24'>
+        <div className='mx-auto max-w-6xl'>
+          <div className='mb-16 grid grid-cols-1 gap-6 sm:mb-24 sm:gap-8 lg:grid-cols-3'>
+            {/* Feature Cards */}
+            <div className='group relative overflow-hidden rounded-2xl border border-zinc-200/50 bg-white/70 p-6 backdrop-blur-sm transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl hover:shadow-blue-500/10 sm:rounded-3xl sm:p-8 dark:border-zinc-700/50 dark:bg-zinc-900/70'>
+              <div className='absolute inset-0 bg-gradient-to-br from-blue-500/5 to-purple-500/5 opacity-0 transition-opacity duration-300 group-hover:opacity-100' />
+              <div className='relative z-10'>
+                <h3 className='mb-3 text-lg font-semibold text-zinc-800 sm:mb-4 sm:text-xl dark:text-zinc-100'>
+                  Innovation
+                </h3>
+                <p className='leading-relaxed text-zinc-600 dark:text-zinc-400'>
+                  Pushing boundaries with cutting-edge technology and creative
+                  solutions.
+                </p>
+              </div>
+            </div>
+
+            <div className='group relative overflow-hidden rounded-2xl border border-zinc-200/50 bg-white/70 p-6 backdrop-blur-sm transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl hover:shadow-purple-500/10 sm:rounded-3xl sm:p-8 dark:border-zinc-700/50 dark:bg-zinc-900/70'>
+              <div className='absolute inset-0 bg-gradient-to-br from-purple-500/5 to-pink-500/5 opacity-0 transition-opacity duration-300 group-hover:opacity-100' />
+              <div className='relative z-10'>
+                <h3 className='mb-3 text-lg font-semibold text-zinc-800 sm:mb-4 sm:text-xl dark:text-zinc-100'>
+                  Excellence
+                </h3>
+                <p className='leading-relaxed text-zinc-600 dark:text-zinc-400'>
+                  Delivering high-quality solutions with attention to every
+                  detail.
+                </p>
+              </div>
+            </div>
+
+            <div className='group relative overflow-hidden rounded-2xl border border-zinc-200/50 bg-white/70 p-6 backdrop-blur-sm transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl hover:shadow-green-500/10 sm:rounded-3xl sm:p-8 dark:border-zinc-700/50 dark:bg-zinc-900/70'>
+              <div className='absolute inset-0 bg-gradient-to-br from-green-500/5 to-teal-500/5 opacity-0 transition-opacity duration-300 group-hover:opacity-100' />
+              <div className='relative z-10'>
+                <h3 className='mb-3 text-lg font-semibold text-zinc-800 sm:mb-4 sm:text-xl dark:text-zinc-100'>
+                  Impact
+                </h3>
+                <p className='leading-relaxed text-zinc-600 dark:text-zinc-400'>
+                  Creating meaningful solutions that make a difference in
+                  people&apos;s lives.
+                </p>
+              </div>
+            </div>
           </div>
+
+          {/* Optional: Featured Articles Section */}
+          {articles.length > 0 && (
+            <div className='text-center'>
+              <h2 className='mb-8 text-2xl font-bold text-zinc-800 sm:mb-12 sm:text-3xl dark:text-zinc-100'>
+                Latest Thoughts
+              </h2>
+              <div className='grid grid-cols-1 gap-6 sm:gap-8 md:grid-cols-2'>
+                {articles.slice(0, 2).map((article) => (
+                  <div
+                    key={article.slug}
+                    className='group relative overflow-hidden rounded-xl border border-zinc-200/50 bg-white/50 p-4 backdrop-blur-sm transition-all duration-300 hover:scale-[1.02] sm:rounded-2xl sm:p-6 dark:border-zinc-700/50 dark:bg-zinc-900/50'
+                  >
+                    <Article article={article} />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </Container>
     </>
