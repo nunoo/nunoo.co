@@ -17,6 +17,7 @@ export function PhotoUpload({
   const [dragActive, setDragActive] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [caption, setCaption] = useState('');
+  const [uploadProgress, setUploadProgress] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleDrag = (e: React.DragEvent) => {
@@ -41,20 +42,34 @@ export function PhotoUpload({
   };
 
   const handleFileSelect = (file: File) => {
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
-    if (!allowedTypes.includes(file.type)) {
+    const allowedTypes = [
+      'image/jpeg',
+      'image/png',
+      'image/webp',
+      'image/gif',
+      'image/heic',
+      'image/heif',
+      'image/tiff',
+      'image/bmp',
+    ];
+    // For HEIC/HEIF files that might not have proper MIME type
+    const fileExtension = file.name.toLowerCase().split('.').pop();
+    const isHeicFile = fileExtension === 'heic' || fileExtension === 'heif';
+
+    if (!allowedTypes.includes(file.type) && !isHeicFile) {
       onUploadError?.(
-        'Please select a valid image file (JPEG, PNG, WebP, or GIF)'
+        'Please select a valid image file (JPEG, PNG, WebP, GIF, HEIC, HEIF, TIFF, BMP)'
       );
       return;
     }
 
-    if (file.size > 20 * 1024 * 1024) {
-      onUploadError?.('File size must be less than 20MB');
+    if (file.size > 50 * 1024 * 1024) {
+      onUploadError?.('File size must be less than 50MB');
       return;
     }
 
     setSelectedFile(file);
+    setUploadProgress(0);
   };
 
   const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -68,6 +83,8 @@ export function PhotoUpload({
     if (!selectedFile) return;
 
     setIsUploading(true);
+    setUploadProgress(0);
+
     try {
       const formData = new FormData();
       formData.append('photo', selectedFile);
@@ -75,26 +92,53 @@ export function PhotoUpload({
         formData.append('caption', caption.trim());
       }
 
-      const response = await fetch('/api/photos/upload', {
-        method: 'POST',
-        body: formData,
+      // Create XMLHttpRequest for progress tracking
+      const xhr = new XMLHttpRequest();
+
+      // Track upload progress
+      xhr.upload.addEventListener('progress', (e) => {
+        if (e.lengthComputable) {
+          const percentComplete = Math.round((e.loaded / e.total) * 100);
+          setUploadProgress(percentComplete);
+        }
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Upload failed');
-      }
+      // Create promise for async/await
+      const uploadPromise = new Promise((resolve, reject) => {
+        xhr.onload = () => {
+          if (xhr.status === 201 || xhr.status === 200) {
+            resolve(JSON.parse(xhr.responseText));
+          } else {
+            try {
+              const errorData = JSON.parse(xhr.responseText);
+              reject(new Error(errorData.error || 'Upload failed'));
+            } catch {
+              reject(new Error('Upload failed'));
+            }
+          }
+        };
 
-      const data = await response.json();
+        xhr.onerror = () => reject(new Error('Network error during upload'));
+        xhr.ontimeout = () => reject(new Error('Upload timeout'));
+      });
+
+      // Start the upload
+      xhr.open('POST', '/api/photos/upload');
+      xhr.timeout = 300000; // 5 minute timeout for large files
+      xhr.send(formData);
+
+      const data = (await uploadPromise) as any;
       onUploadSuccess?.(data.photo);
 
       setSelectedFile(null);
       setCaption('');
+      setUploadProgress(0);
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
     } catch (error: any) {
       onUploadError?.(error.message || 'Upload failed');
+      setUploadProgress(0);
     } finally {
       setIsUploading(false);
     }
@@ -103,6 +147,7 @@ export function PhotoUpload({
   const resetUpload = () => {
     setSelectedFile(null);
     setCaption('');
+    setUploadProgress(0);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -126,7 +171,7 @@ export function PhotoUpload({
             ref={fileInputRef}
             type='file'
             className='absolute inset-0 h-full w-full cursor-pointer opacity-0'
-            accept='image/*'
+            accept='image/jpeg,image/jpg,image/png,image/webp,image/gif,image/heic,image/heif,image/tiff,image/bmp,.heic,.heif'
             onChange={handleFileInputChange}
           />
           <div className='space-y-4'>
@@ -150,7 +195,7 @@ export function PhotoUpload({
                 Drop your photo here, or click to browse
               </p>
               <p className='mt-1 text-xs text-zinc-500 dark:text-zinc-400'>
-                JPEG, PNG, WebP, or GIF up to 20MB
+                JPEG, PNG, WebP, GIF, HEIC, HEIF, TIFF, BMP up to 50MB
               </p>
             </div>
           </div>
@@ -209,7 +254,7 @@ export function PhotoUpload({
               disabled={isUploading}
               className='flex-1'
             >
-              {isUploading ? 'Uploading...' : 'Upload Photo'}
+              {isUploading ? `Uploading ${uploadProgress}%` : 'Upload Photo'}
             </Button>
             <Button
               onClick={resetUpload}
@@ -219,6 +264,22 @@ export function PhotoUpload({
               Cancel
             </Button>
           </div>
+
+          {isUploading && (
+            <div className='mt-3'>
+              <div className='h-2 w-full overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-700'>
+                <div
+                  className='h-full bg-teal-600 transition-all duration-300 ease-out'
+                  style={{ width: `${uploadProgress}%` }}
+                />
+              </div>
+              <p className='mt-2 text-center text-sm text-zinc-600 dark:text-zinc-400'>
+                {uploadProgress < 100
+                  ? `Uploading: ${uploadProgress}%`
+                  : 'Processing...'}
+              </p>
+            </div>
+          )}
         </div>
       )}
     </div>
