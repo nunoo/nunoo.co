@@ -1,0 +1,19 @@
+server:
+  port: "8080"
+  readTimeout: "15s"
+  writeTimeout: "15s"
+  idleTimeout: "60s"
+
+database:
+  host: "localhost"
+  port: "5432"
+  user: "your-db-user"
+  password: "your-db-password"
+  dbname: "your-db-name"
+  sslmode: "disable"
+
+jwt:
+  secret: "your-jwt-secret-key"
+  tokenExpiry: "15m"
+  refreshSecret: "your-jwt-refresh-secret"
+  refreshExpiry: "72h"
