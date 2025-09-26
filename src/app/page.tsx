@@ -3,15 +3,15 @@ import Link from 'next/link';
 import clsx from 'clsx';
 
 import { Button } from '@/components/Button';
-import { Card } from '@/components/Card';
+// import { Card } from '@/components/Card';
 import { Container } from '@/components/Container';
 import { PageBackground } from '@/components/PageBackground';
-import {
-  GitHubIcon,
-  InstagramIcon,
-  LinkedInIcon,
-  XIcon,
-} from '@/components/SocialIcons';
+// import {
+//   GitHubIcon,
+//   InstagramIcon,
+//   LinkedInIcon,
+//   XIcon,
+// } from '@/components/SocialIcons';
 import avatarImage from '@/images/avatar.jpg';
 import logoAirbnb from '@/images/logos/airbnb.svg';
 import logoFacebook from '@/images/logos/facebook.svg';
@@ -22,7 +22,6 @@ import image2 from '@/images/photos/image-2.jpg';
 import image3 from '@/images/photos/image-3.jpg';
 import image4 from '@/images/photos/image-4.jpg';
 import image5 from '@/images/photos/image-5.jpg';
-import { formatDate } from '@/lib/formatDate';
 
 function MailIcon(props: React.ComponentPropsWithoutRef<'svg'>) {
   return (

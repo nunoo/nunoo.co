@@ -10,7 +10,7 @@ import { useMe } from '@/lib/useMe';
 
 export default function AdminPhotosPage() {
   const router = useRouter();
-  const { user, loading: userLoading, error: userError } = useMe();
+  const { user, loading: userLoading} = useMe();
   const [uploadSuccess, setUploadSuccess] = useState<string | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [feedError, setFeedError] = useState<string | null>(null);

@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { Container } from '@/components/Container';
 import { PageBackground } from '@/components/PageBackground';
-import { SimpleLayout } from '@/components/SimpleLayout';
 import { PhotoFeed } from '@/components/PhotoFeed';
 
 export default function PhotosPage() {

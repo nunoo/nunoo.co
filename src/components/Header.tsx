@@ -267,9 +267,6 @@ function Avatar({
 
 export function Header() {
   let isHomePage = usePathname() === '/';
-  const router = useRouter();
-  const { user } = useMe();
-
   let headerRef = useRef<React.ElementRef<'div'>>(null);
   let isInitial = useRef(true);
 
