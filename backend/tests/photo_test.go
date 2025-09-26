@@ -189,7 +189,7 @@ func TestPhotoUpload(t *testing.T) {
 
 	// Test file too large
 	t.Run("file too large", func(t *testing.T) {
-		largeImage := make([]byte, 11*1024*1024) // 11MB
+		largeImage := make([]byte, 21*1024*1024) // 21MB (over 20MB limit)
 		copy(largeImage, testImage)
 
 		body := &bytes.Buffer{}

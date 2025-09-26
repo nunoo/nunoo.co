@@ -1,8 +1,8 @@
+export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { COOKIE_ACCESS } from '@/lib/auth';
 import { createServerSupabaseClient } from '@/lib/supabase/client';
-import { Photo } from '@/lib/supabase/types';
 
 export async function POST(request: NextRequest) {
   try {

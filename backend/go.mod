@@ -1,8 +1,6 @@
 module nunoo.co/backend
 
-go 1.23.0
-
-toolchain go1.24.4
+go 1.25.1
 
 require (
 	github.com/danielgtaylor/huma/v2 v2.22.0

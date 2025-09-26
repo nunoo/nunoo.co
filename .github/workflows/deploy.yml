@@ -6,8 +6,8 @@ on:
   workflow_dispatch:
 
 env:
-  NODE_VERSION: '18'
-  GO_VERSION: '1.23'
+  NODE_VERSION: '20'
+  GO_VERSION: '1.25.1'
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
 
