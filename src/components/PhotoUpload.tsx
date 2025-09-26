@@ -127,7 +127,7 @@ export function PhotoUpload({
       xhr.timeout = 300000; // 5 minute timeout for large files
       xhr.send(formData);
 
-      const data = await uploadPromise as any;
+      const data = (await uploadPromise) as any;
       onUploadSuccess?.(data.photo);
 
       setSelectedFile(null);

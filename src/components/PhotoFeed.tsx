@@ -259,7 +259,7 @@ function PhotoCard({
           alt={photo.caption || 'Photo'}
           width={photo.width || 1200}
           height={photo.height || 800}
-          className='w-full h-auto object-contain'
+          className='h-auto w-full object-contain'
           sizes='100vw'
           priority={false}
           quality={90}
