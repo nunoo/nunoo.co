@@ -49,8 +49,8 @@ export function PhotoUpload({
       return;
     }
 
-    if (file.size > 10 * 1024 * 1024) {
-      onUploadError?.('File size must be less than 10MB');
+    if (file.size > 20 * 1024 * 1024) {
+      onUploadError?.('File size must be less than 20MB');
       return;
     }
 
@@ -150,7 +150,7 @@ export function PhotoUpload({
                 Drop your photo here, or click to browse
               </p>
               <p className='mt-1 text-xs text-zinc-500 dark:text-zinc-400'>
-                JPEG, PNG, WebP, or GIF up to 10MB
+                JPEG, PNG, WebP, or GIF up to 20MB
               </p>
             </div>
           </div>

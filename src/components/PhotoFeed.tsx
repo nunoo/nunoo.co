@@ -115,12 +115,14 @@ export function PhotoFeed({ refreshTrigger, onError, isAdmin = false }: PhotoFee
 
   if (loading) {
     return (
-      <div className='grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3'>
-        {Array.from({ length: 6 }).map((_, i) => (
+      <div className='space-y-8'>
+        {Array.from({ length: 3 }).map((_, i) => (
           <div key={i} className='animate-pulse'>
-            <div className='mb-3 aspect-square rounded-lg bg-zinc-200 dark:bg-zinc-700'></div>
-            <div className='mb-2 h-4 rounded bg-zinc-200 dark:bg-zinc-700'></div>
-            <div className='h-3 w-2/3 rounded bg-zinc-200 dark:bg-zinc-700'></div>
+            <div className='mb-4 aspect-[4/3] rounded-2xl bg-zinc-200 dark:bg-zinc-700'></div>
+            <div className='px-6'>
+              <div className='mb-3 h-6 rounded bg-zinc-200 dark:bg-zinc-700'></div>
+              <div className='h-4 w-1/3 rounded bg-zinc-200 dark:bg-zinc-700'></div>
+            </div>
           </div>
         ))}
       </div>
@@ -195,7 +197,7 @@ export function PhotoFeed({ refreshTrigger, onError, isAdmin = false }: PhotoFee
         </div>
       )}
 
-      <div className='grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3'>
+      <div className='space-y-8'>
         {feed.photos.map((photo) => (
           <PhotoCard key={photo.id} photo={photo} onDelete={deletePhoto} showDeleteButton={isAdmin} />
         ))}
@@ -211,12 +213,6 @@ export function PhotoFeed({ refreshTrigger, onError, isAdmin = false }: PhotoFee
             {loadingMore ? 'Loading...' : 'Load More'}
           </button>
         </div>
-      )}
-
-      {feed.total_count > 0 && (
-        <p className='text-center text-sm text-zinc-600 dark:text-zinc-400'>
-          Showing {feed.photos.length} of {feed.total_count} photos
-        </p>
       )}
     </div>
   );
@@ -243,14 +239,16 @@ function PhotoCard({ photo, onDelete, showDeleteButton = false }: PhotoCardProps
   };
 
   return (
-    <div className='group relative overflow-hidden rounded-lg bg-white shadow-md shadow-zinc-800/5 ring-1 ring-zinc-900/5 dark:bg-zinc-900 dark:ring-zinc-800'>
-      <div className='relative aspect-square'>
+    <div className='group relative overflow-hidden rounded-2xl bg-white shadow-lg shadow-zinc-800/10 ring-1 ring-zinc-900/5 dark:bg-zinc-900 dark:ring-zinc-800'>
+      <div className='relative aspect-[4/3] lg:aspect-[16/10]'>
         <Image
           src={photo.public_url}
           alt={photo.caption || 'Photo'}
           fill
           className='object-cover'
-          sizes='(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw'
+          sizes='100vw'
+          priority={false}
+          quality={90}
         />
 
         {showDeleteButton && (
@@ -320,17 +318,29 @@ function PhotoCard({ photo, onDelete, showDeleteButton = false }: PhotoCardProps
         )}
       </div>
 
-      <div className='p-4'>
+      <div className='p-6'>
         {photo.caption && (
-          <p className='mb-2 overflow-hidden text-sm text-zinc-900 dark:text-zinc-100'>
-            {photo.caption.length > 100
-              ? `${photo.caption.substring(0, 100)}...`
-              : photo.caption}
+          <p className='mb-3 text-lg text-zinc-900 dark:text-zinc-100'>
+            {photo.caption}
           </p>
         )}
-        <p className='text-xs text-zinc-500 dark:text-zinc-400'>
-          {formatDate(photo.created_at)}
-        </p>
+        <div className='flex items-center justify-between'>
+          <p className='text-sm text-zinc-600 dark:text-zinc-400'>
+            {formatDate(photo.created_at)}
+          </p>
+          <div className='flex items-center gap-4'>
+            <p className='text-sm text-zinc-500 dark:text-zinc-500'>
+              {new Date(photo.created_at).toLocaleTimeString('en-US', {
+                hour: 'numeric',
+                minute: '2-digit',
+                hour12: true
+              })}
+            </p>
+            <p className='text-sm text-zinc-500 dark:text-zinc-500'>
+              {(photo.file_size / (1024 * 1024)).toFixed(1)} MB
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );
