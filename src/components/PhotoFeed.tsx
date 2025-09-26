@@ -253,15 +253,17 @@ function PhotoCard({
 
   return (
     <div className='group relative overflow-hidden rounded-2xl bg-white shadow-lg shadow-zinc-800/10 ring-1 ring-zinc-900/5 dark:bg-zinc-900 dark:ring-zinc-800'>
-      <div className='relative aspect-[4/3] lg:aspect-[16/10]'>
+      <div className='relative'>
         <Image
           src={photo.public_url}
           alt={photo.caption || 'Photo'}
-          fill
-          className='object-cover'
+          width={photo.width || 1200}
+          height={photo.height || 800}
+          className='w-full h-auto object-contain'
           sizes='100vw'
           priority={false}
           quality={90}
+          style={{ maxHeight: '80vh' }}
         />
 
         {showDeleteButton && (

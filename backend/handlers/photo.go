@@ -19,8 +19,8 @@ import (
 )
 
 const (
-	MaxFileSize  = 20 << 20 // 20MB
-	MaxMemory    = 5 << 20  // 5MB for form parsing
+	MaxFileSize  = 50 << 20 // 50MB
+	MaxMemory    = 10 << 20 // 10MB for form parsing
 	UploadDir    = "./uploads/photos"
 	ThumbnailDir = "./uploads/thumbnails"
 )
@@ -30,6 +30,10 @@ var allowedMimeTypes = map[string]bool{
 	"image/png":                true,
 	"image/webp":               true,
 	"image/gif":                true,
+	"image/heic":               true,
+	"image/heif":               true,
+	"image/tiff":               true,
+	"image/bmp":                true,
 	"application/octet-stream": true, // Fallback for content type detection issues
 }
 
