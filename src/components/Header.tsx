@@ -375,29 +375,6 @@ export function Header() {
               <div className='flex justify-end md:flex-1'>
                 <div className='pointer-events-auto'>
                   <div className='flex items-center gap-2'>
-                    {user ? (
-                      <>
-                        <span className='hidden text-sm text-zinc-600 sm:inline dark:text-zinc-300'>
-                          {user.email}
-                        </span>
-                        <button
-                          className='rounded-full bg-zinc-900 px-3 py-1 text-sm text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white'
-                          onClick={async () => {
-                            await fetch('/api/auth/logout', { method: 'POST' });
-                            router.refresh();
-                          }}
-                        >
-                          Sign out
-                        </button>
-                      </>
-                    ) : (
-                      <Link
-                        href='/login'
-                        className='rounded-full bg-zinc-900 px-3 py-1 text-sm text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white'
-                      >
-                        Sign in
-                      </Link>
-                    )}
                     <ThemeToggle />
                   </div>
                 </div>

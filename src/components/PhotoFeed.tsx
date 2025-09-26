@@ -8,8 +8,8 @@ interface Photo {
   id: string;
   user_id: string;
   file_name: string;
-  original_url: string;
-  thumbnail_url?: string;
+  storage_path: string;
+  public_url: string;
   caption?: string;
   file_size: number;
   mime_type: string;
@@ -246,7 +246,7 @@ function PhotoCard({ photo, onDelete, showDeleteButton = false }: PhotoCardProps
     <div className='group relative overflow-hidden rounded-lg bg-white shadow-md shadow-zinc-800/5 ring-1 ring-zinc-900/5 dark:bg-zinc-900 dark:ring-zinc-800'>
       <div className='relative aspect-square'>
         <Image
-          src={photo.thumbnail_url || photo.original_url}
+          src={photo.public_url}
           alt={photo.caption || 'Photo'}
           fill
           className='object-cover'

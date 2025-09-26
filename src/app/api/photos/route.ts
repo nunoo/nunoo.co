@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { COOKIE_ACCESS } from '@/lib/auth';
-
-const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:8080';
+import { createServerSupabaseClient } from '@/lib/supabase/client';
 
 export async function GET(request: NextRequest) {
   try {
@@ -16,20 +15,23 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const response = await fetch(`${BACKEND_URL}/photos/?id=${id}`, {
-      method: 'GET',
-      headers: {
-        Cookie: request.headers.get('cookie') || '',
-      },
-    });
+    const supabase = createServerSupabaseClient();
 
-    const data = await response.json();
+    // Get photo (public access - no auth needed)
+    const { data: photo, error } = await supabase
+      .from('photos')
+      .select('*')
+      .eq('id', id)
+      .single();
 
-    if (!response.ok) {
-      return NextResponse.json(data, { status: response.status });
+    if (error || !photo) {
+      return NextResponse.json(
+        { error: 'Photo not found' },
+        { status: 404 }
+      );
     }
 
-    return NextResponse.json(data, { status: response.status });
+    return NextResponse.json({ photo }, { status: 200 });
   } catch (error) {
     console.error('Get photo error:', error);
     return NextResponse.json(
@@ -62,16 +64,60 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    const response = await fetch(`${BACKEND_URL}/photos/?id=${id}`, {
-      method: 'DELETE',
-      headers: {
-        'Authorization': `Bearer ${accessToken}`,
-      },
-    });
+    const supabase = createServerSupabaseClient();
 
-    if (!response.ok) {
-      const data = await response.json();
-      return NextResponse.json(data, { status: response.status });
+    // Get user from token
+    const { data: { user }, error: userError } = await supabase.auth.getUser(accessToken);
+
+    if (userError || !user) {
+      return NextResponse.json(
+        { error: 'Invalid authentication' },
+        { status: 401 }
+      );
+    }
+
+    // Get photo to check ownership and get storage path
+    const { data: photo, error: fetchError } = await supabase
+      .from('photos')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (fetchError || !photo) {
+      return NextResponse.json(
+        { error: 'Photo not found' },
+        { status: 404 }
+      );
+    }
+
+    // Check if user owns the photo
+    if (photo.user_id !== user.id) {
+      return NextResponse.json(
+        { error: 'Unauthorized to delete this photo' },
+        { status: 403 }
+      );
+    }
+
+    // Delete from storage
+    const { error: storageError } = await supabase.storage
+      .from('photos')
+      .remove([photo.storage_path]);
+
+    if (storageError) {
+      console.error('Storage deletion error:', storageError);
+    }
+
+    // Delete from database
+    const { error: deleteError } = await supabase
+      .from('photos')
+      .delete()
+      .eq('id', id);
+
+    if (deleteError) {
+      return NextResponse.json(
+        { error: 'Failed to delete photo' },
+        { status: 500 }
+      );
     }
 
     return new NextResponse(null, { status: 204 });

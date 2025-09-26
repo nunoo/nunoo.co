@@ -1,12 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { COOKIE_ACCESS } from '@/lib/auth';
-
-const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:8080';
+import { createServerSupabaseClient } from '@/lib/supabase/client';
+import { Photo } from '@/lib/supabase/types';
 
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
+    const file = formData.get('photo') as File;
+    const caption = (formData.get('caption') as string) || '';
+
+    if (!file) {
+      return NextResponse.json(
+        { error: 'No file uploaded' },
+        { status: 400 }
+      );
+    }
+
+    // Check file size (10MB limit)
+    if (file.size > 10 * 1024 * 1024) {
+      return NextResponse.json(
+        { error: 'File too large (max 10MB)' },
+        { status: 400 }
+      );
+    }
 
     // Get the access token from cookies
     const cookieStore = cookies();
@@ -19,21 +36,72 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const response = await fetch(`${BACKEND_URL}/photos/upload`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${accessToken}`,
-      },
-      body: formData,
-    });
+    const supabase = createServerSupabaseClient();
 
-    const data = await response.json();
+    // Get user from token
+    const { data: { user }, error: userError } = await supabase.auth.getUser(accessToken);
 
-    if (!response.ok) {
-      return NextResponse.json(data, { status: response.status });
+    if (userError || !user) {
+      return NextResponse.json(
+        { error: 'Invalid authentication' },
+        { status: 401 }
+      );
     }
 
-    return NextResponse.json(data, { status: response.status });
+    // Create unique filename
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${user.id}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+
+    // Upload to Supabase Storage
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from('photos')
+      .upload(fileName, file, {
+        cacheControl: '3600',
+        upsert: false
+      });
+
+    if (uploadError) {
+      console.error('Upload error:', uploadError);
+      return NextResponse.json(
+        { error: 'Failed to upload photo' },
+        { status: 500 }
+      );
+    }
+
+    // Get public URL
+    const { data: { publicUrl } } = supabase.storage
+      .from('photos')
+      .getPublicUrl(fileName);
+
+    // Save photo metadata to database
+    const photoData = {
+      user_id: user.id,
+      file_name: file.name,
+      storage_path: fileName,
+      public_url: publicUrl,
+      caption: caption,
+      file_size: file.size,
+      mime_type: file.type,
+    };
+
+    const { data: photo, error: dbError } = await supabase
+      .from('photos')
+      .insert(photoData)
+      .select()
+      .single();
+
+    if (dbError) {
+      // Try to clean up uploaded file
+      await supabase.storage.from('photos').remove([fileName]);
+
+      console.error('Database error:', dbError);
+      return NextResponse.json(
+        { error: 'Failed to save photo metadata' },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({ photo }, { status: 201 });
   } catch (error) {
     console.error('Photo upload error:', error);
     return NextResponse.json(
