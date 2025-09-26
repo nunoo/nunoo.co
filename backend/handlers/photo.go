@@ -19,7 +19,7 @@ import (
 )
 
 const (
-	MaxFileSize  = 50 << 20 // 50MB
+	MaxFileSize  = 20 << 20 // 20MB
 	MaxMemory    = 10 << 20 // 10MB for form parsing
 	UploadDir    = "./uploads/photos"
 	ThumbnailDir = "./uploads/thumbnails"
@@ -86,7 +86,7 @@ func (h *PhotoHandlers) UploadPhoto(w http.ResponseWriter, r *http.Request) {
 	}()
 
 	if header.Size > MaxFileSize {
-		writeError(w, http.StatusBadRequest, "file too large (max 20MB)")
+		writeError(w, http.StatusBadRequest, "file too large")
 		return
 	}
 

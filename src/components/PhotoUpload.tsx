@@ -111,15 +111,38 @@ export function PhotoUpload({
           } else {
             try {
               const errorData = JSON.parse(xhr.responseText);
-              reject(new Error(errorData.error || 'Upload failed'));
+              reject(
+                new Error(
+                  errorData.error || `Upload failed with status ${xhr.status}`
+                )
+              );
             } catch {
-              reject(new Error('Upload failed'));
+              reject(new Error(`Upload failed with status ${xhr.status}`));
             }
           }
         };
 
-        xhr.onerror = () => reject(new Error('Network error during upload'));
-        xhr.ontimeout = () => reject(new Error('Upload timeout'));
+        xhr.onerror = () => {
+          // Mobile-specific error handling
+          const isMobile = /iPhone|iPad|iPod|Android/i.test(
+            navigator.userAgent
+          );
+          if (isMobile) {
+            reject(
+              new Error(
+                'Network error - please check your connection and try again'
+              )
+            );
+          } else {
+            reject(new Error('Network error during upload'));
+          }
+        };
+        xhr.ontimeout = () =>
+          reject(
+            new Error(
+              'Upload timeout - file may be too large for your connection'
+            )
+          );
       });
 
       // Start the upload
