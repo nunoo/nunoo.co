@@ -5,6 +5,7 @@ import clsx from 'clsx';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
 import { Container } from '@/components/Container';
+import { PageBackground } from '@/components/PageBackground';
 import {
   GitHubIcon,
   InstagramIcon,
@@ -273,14 +274,10 @@ export default async function Home() {
 
   return (
     <>
+      <PageBackground />
+
       {/* Hero Section with Modern Background */}
       <div className='relative flex min-h-[90vh] items-center justify-center overflow-hidden py-16 sm:py-24'>
-        {/* Animated Background Grid */}
-        <div className='absolute inset-0 animate-pulse-slow bg-cyber-grid bg-grid opacity-20' />
-
-        {/* Gradient Overlay */}
-        <div className='absolute inset-0 bg-gradient-to-br from-transparent via-blue-50/30 to-purple-50/20 dark:from-transparent dark:via-blue-950/20 dark:to-purple-950/10' />
-
         <Container className='relative z-10 w-full'>
           <div className='mx-auto w-full max-w-7xl text-center'>
             {/* Integrated Profile Picture with Glowing Area */}
@@ -295,7 +292,7 @@ export default async function Home() {
                 {/* Profile Image Container - Centered within the glow */}
                 <div className='relative z-20 flex items-center justify-center'>
                   <div className='relative rounded-full bg-gradient-to-r from-blue-500/30 via-purple-500/30 to-pink-500/30 p-2 backdrop-blur-sm transition-all duration-500 group-hover:from-blue-500/40 group-hover:via-purple-500/40 group-hover:to-pink-500/40'>
-                    <div className='relative overflow-hidden rounded-full bg-red-500'>
+                    <div className='relative overflow-hidden rounded-full'>
                       <Image
                         src={avatarImage}
                         alt='Shawn Nunoo'

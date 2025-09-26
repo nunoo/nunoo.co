@@ -4,6 +4,7 @@ import Link from 'next/link';
 import clsx from 'clsx';
 
 import { Container } from '@/components/Container';
+import { PageBackground } from '@/components/PageBackground';
 import { GitHubIcon, LinkedInIcon } from '@/components/SocialIcons';
 import portraitImage from '@/images/portrait.jpg';
 
@@ -51,12 +52,10 @@ export const metadata: Metadata = {
 export default function About() {
   return (
     <>
+      <PageBackground />
+
       {/* Hero Section */}
       <div className='relative overflow-hidden py-32'>
-        {/* Background Elements */}
-        <div className='absolute inset-0 bg-gradient-to-br from-blue-50/30 via-transparent to-purple-50/30 dark:from-blue-950/20 dark:via-transparent dark:to-purple-950/20' />
-        <div className='absolute inset-0 animate-pulse-slow bg-cyber-grid bg-grid opacity-10' />
-
         <Container className='relative z-10'>
           <div className='mx-auto max-w-4xl text-center'>
             <h1 className='mb-6 bg-gradient-to-r from-zinc-800 via-zinc-600 to-zinc-800 bg-clip-text text-5xl font-bold tracking-tight text-transparent md:text-7xl dark:from-zinc-100 dark:via-zinc-300 dark:to-zinc-100'>
