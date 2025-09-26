@@ -14,6 +14,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
     }
 
+    // Log file info for debugging mobile issues
+    console.log('Upload request:', {
+      fileName: file.name,
+      fileSize: file.size,
+      fileType: file.type || 'empty',
+      userAgent: request.headers.get('user-agent'),
+    });
+
     // Check file size (50MB limit)
     if (file.size > 50 * 1024 * 1024) {
       return NextResponse.json(
@@ -75,6 +83,25 @@ export async function POST(request: NextRequest) {
       data: { publicUrl },
     } = supabase.storage.from('photos').getPublicUrl(fileName);
 
+    // Get mime type - fallback to extension-based detection for mobile
+    let mimeType = file.type;
+    if (!mimeType || mimeType === '') {
+      const ext = fileExt?.toLowerCase();
+      const mimeMap: { [key: string]: string } = {
+        jpg: 'image/jpeg',
+        jpeg: 'image/jpeg',
+        png: 'image/png',
+        gif: 'image/gif',
+        webp: 'image/webp',
+        heic: 'image/heic',
+        heif: 'image/heif',
+        tiff: 'image/tiff',
+        tif: 'image/tiff',
+        bmp: 'image/bmp',
+      };
+      mimeType = mimeMap[ext || ''] || 'application/octet-stream';
+    }
+
     // Save photo metadata to database
     const photoData = {
       user_id: user.id,
@@ -83,7 +110,7 @@ export async function POST(request: NextRequest) {
       public_url: publicUrl,
       caption: caption,
       file_size: file.size,
-      mime_type: file.type,
+      mime_type: mimeType,
     };
 
     const { data: photo, error: dbError } = await supabase
