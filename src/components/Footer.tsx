@@ -1,6 +1,9 @@
+'use client';
+
 import Link from 'next/link';
 
 import { ContainerInner, ContainerOuter } from '@/components/Container';
+import { useMe } from '@/lib/useMe';
 
 function NavLink({
   href,
@@ -20,6 +23,8 @@ function NavLink({
 }
 
 export function Footer() {
+  const { user } = useMe();
+
   return (
     <footer className='mt-32 flex-none'>
       <ContainerOuter>
@@ -29,6 +34,7 @@ export function Footer() {
               <div className='flex flex-wrap justify-center gap-x-6 gap-y-1 text-sm font-medium text-zinc-800 dark:text-zinc-200'>
                 <NavLink href='/'>Home</NavLink>
                 <NavLink href='/photos'>Photos</NavLink>
+                {user && <NavLink href='/admin/photos'>Admin</NavLink>}
                 {/* <NavLink href='/about'>About</NavLink> */}
                 {/* <NavLink href="/projects">Projects</NavLink> */}
                 {/* <NavLink href="/speaking">Speaking</NavLink>
