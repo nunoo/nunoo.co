@@ -19,17 +19,17 @@ import (
 )
 
 const (
-	MaxFileSize   = 20 << 20 // 20MB
-	MaxMemory     = 5 << 20  // 5MB for form parsing
-	UploadDir     = "./uploads/photos"
-	ThumbnailDir  = "./uploads/thumbnails"
+	MaxFileSize  = 20 << 20 // 20MB
+	MaxMemory    = 5 << 20  // 5MB for form parsing
+	UploadDir    = "./uploads/photos"
+	ThumbnailDir = "./uploads/thumbnails"
 )
 
 var allowedMimeTypes = map[string]bool{
-	"image/jpeg":             true,
-	"image/png":              true,
-	"image/webp":             true,
-	"image/gif":              true,
+	"image/jpeg":               true,
+	"image/png":                true,
+	"image/webp":               true,
+	"image/gif":                true,
 	"application/octet-stream": true, // Fallback for content type detection issues
 }
 
@@ -41,9 +41,9 @@ type PhotoHandlers struct {
 func NewPhotoHandlers(photos repository.PhotoRepository) *PhotoHandlers {
 	os.MkdirAll(UploadDir, 0755)
 	os.MkdirAll(ThumbnailDir, 0755)
-	
+
 	logger, _ := zap.NewProduction()
-	
+
 	return &PhotoHandlers{
 		photos: photos,
 		logger: logger,
@@ -85,7 +85,7 @@ func (h *PhotoHandlers) UploadPhoto(w http.ResponseWriter, r *http.Request) {
 		mimeType = http.DetectContentType(buf[:n])
 		file.Seek(0, 0) // Reset file pointer
 	}
-	
+
 	if !allowedMimeTypes[mimeType] {
 		writeError(w, http.StatusBadRequest, fmt.Sprintf("unsupported file type (jpeg, png, webp, gif only): %s", mimeType))
 		return
@@ -122,14 +122,14 @@ func (h *PhotoHandlers) UploadPhoto(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.photos.Create(r.Context(), photo); err != nil {
-		h.logger.Error("failed to create photo record", 
+		h.logger.Error("failed to create photo record",
 			zap.Error(err),
 			zap.String("user_id", user.ID),
 			zap.String("photo_id", photo.ID))
-		
+
 		// Clean up uploaded file on database error
 		h.deletePhotoFiles(photo)
-		
+
 		if err == repository.ErrPhotoExists {
 			writeError(w, http.StatusConflict, "photo already exists")
 			return
@@ -310,12 +310,12 @@ func sanitizeInput(input string) string {
 	input = strings.ReplaceAll(input, "&", "")
 	input = strings.ReplaceAll(input, "\"", "")
 	input = strings.ReplaceAll(input, "'", "")
-	
+
 	// Limit length
 	if len(input) > 500 {
 		input = input[:500]
 	}
-	
+
 	return strings.TrimSpace(input)
 }
 

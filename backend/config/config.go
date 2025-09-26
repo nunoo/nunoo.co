@@ -48,8 +48,8 @@ type JWTConfig struct {
 
 func Load() (*Config, error) {
 	// Load .env file if it exists (both in current dir and parent dir for flexibility)
-	_ = godotenv.Load()           // Load .env in current directory
-	_ = godotenv.Load("../.env")  // Also try parent directory
+	_ = godotenv.Load()          // Load .env in current directory
+	_ = godotenv.Load("../.env") // Also try parent directory
 
 	// Check for backend specific .env file
 	if _, err := os.Stat("backend/.env"); err == nil {

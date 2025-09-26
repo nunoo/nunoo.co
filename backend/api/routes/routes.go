@@ -22,10 +22,10 @@ type Protected struct {
 
 // PhotoHandlers bundles photo-related handler functions.
 type PhotoHandlers struct {
-	UploadPhoto   http.HandlerFunc
-	GetPhotoFeed  http.HandlerFunc
-	GetPhoto      http.HandlerFunc
-	DeletePhoto   http.HandlerFunc
+	UploadPhoto    http.HandlerFunc
+	GetPhotoFeed   http.HandlerFunc
+	GetPhoto       http.HandlerFunc
+	DeletePhoto    http.HandlerFunc
 	AuthMiddleware func(http.Handler) http.Handler
 }
 
