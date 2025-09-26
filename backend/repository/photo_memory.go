@@ -85,6 +85,34 @@ func (r *MemoryPhotoRepo) Update(ctx context.Context, photo *models.Photo) error
 	return nil
 }
 
+func (r *MemoryPhotoRepo) GetAll(ctx context.Context, page, limit int) ([]models.Photo, int64, error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	var allPhotos []models.Photo
+	for _, photo := range r.photos {
+		allPhotos = append(allPhotos, *photo)
+	}
+
+	sort.Slice(allPhotos, func(i, j int) bool {
+		return allPhotos[i].CreatedAt.After(allPhotos[j].CreatedAt)
+	})
+
+	totalCount := int64(len(allPhotos))
+	offset := (page - 1) * limit
+
+	if offset >= len(allPhotos) {
+		return []models.Photo{}, totalCount, nil
+	}
+
+	end := offset + limit
+	if end > len(allPhotos) {
+		end = len(allPhotos)
+	}
+
+	return allPhotos[offset:end], totalCount, nil
+}
+
 func (r *MemoryPhotoRepo) Delete(ctx context.Context, id string) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()

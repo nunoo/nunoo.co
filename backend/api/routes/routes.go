@@ -51,13 +51,16 @@ func RegisterProtectedRoutes(r chi.Router, p Protected) {
 	})
 }
 
-// RegisterPhotoRoutes registers photo endpoints under auth middleware.
+// RegisterPhotoRoutes registers photo endpoints with appropriate auth.
 func RegisterPhotoRoutes(r chi.Router, h PhotoHandlers) {
+	// Public routes - no auth required for viewing
+	r.Get("/photos/feed", h.GetPhotoFeed)
+	r.Get("/photos/", h.GetPhoto) // ?id=photo_id
+
+	// Protected routes - auth required for upload/delete
 	r.Group(func(r chi.Router) {
 		r.Use(h.AuthMiddleware)
 		r.Post("/photos/upload", h.UploadPhoto)
-		r.Get("/photos/feed", h.GetPhotoFeed)
-		r.Get("/photos/", h.GetPhoto) // ?id=photo_id
 		r.Delete("/photos/", h.DeletePhoto) // ?id=photo_id
 	})
 }

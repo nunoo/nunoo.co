@@ -150,6 +150,62 @@ func (r *PostgresPhotoRepo) Update(ctx context.Context, photo *models.Photo) err
 	return nil
 }
 
+func (r *PostgresPhotoRepo) GetAll(ctx context.Context, page, limit int) ([]models.Photo, int64, error) {
+	countQuery := `SELECT COUNT(*) FROM photos`
+	var totalCount int64
+	err := r.db.QueryRowContext(ctx, countQuery).Scan(&totalCount)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	offset := (page - 1) * limit
+	query := `
+		SELECT id, user_id, file_name, original_url, thumbnail_url, caption, file_size, mime_type, width, height, created_at, updated_at
+		FROM photos
+		ORDER BY created_at DESC
+		LIMIT $1 OFFSET $2
+	`
+
+	rows, err := r.db.QueryContext(ctx, query, limit, offset)
+	if err != nil {
+		return nil, 0, err
+	}
+	defer rows.Close()
+
+	var photos []models.Photo
+	for rows.Next() {
+		photo := models.Photo{}
+		var thumbnailURL sql.NullString
+		var width, height sql.NullInt32
+
+		err := rows.Scan(
+			&photo.ID, &photo.UserID, &photo.FileName, &photo.OriginalURL, &thumbnailURL,
+			&photo.Caption, &photo.FileSize, &photo.MimeType, &width, &height,
+			&photo.CreatedAt, &photo.UpdatedAt)
+		if err != nil {
+			return nil, 0, err
+		}
+
+		if thumbnailURL.Valid {
+			photo.ThumbnailURL = thumbnailURL.String
+		}
+		if width.Valid {
+			photo.Width = int(width.Int32)
+		}
+		if height.Valid {
+			photo.Height = int(height.Int32)
+		}
+
+		photos = append(photos, photo)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, 0, err
+	}
+
+	return photos, totalCount, nil
+}
+
 func (r *PostgresPhotoRepo) Delete(ctx context.Context, id string) error {
 	query := `DELETE FROM photos WHERE id = $1`
 	result, err := r.db.ExecContext(ctx, query, id)

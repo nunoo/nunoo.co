@@ -152,17 +152,11 @@ func (h *PhotoHandlers) GetPhotoFeed(w http.ResponseWriter, r *http.Request) {
 		limit = 20
 	}
 
-	user := getUserFromContext(r)
-	if user == nil {
-		writeError(w, http.StatusUnauthorized, "unauthorized")
-		return
-	}
-
-	photos, totalCount, err := h.photos.GetByUserID(r.Context(), user.ID, page, limit)
+	// Public feed - get all photos regardless of user
+	photos, totalCount, err := h.photos.GetAll(r.Context(), page, limit)
 	if err != nil {
-		h.logger.Error("failed to get photos", 
+		h.logger.Error("failed to get photos",
 			zap.Error(err),
-			zap.String("user_id", user.ID),
 			zap.Int("page", page),
 			zap.Int("limit", limit))
 		writeError(w, http.StatusInternalServerError, "failed to get photos")

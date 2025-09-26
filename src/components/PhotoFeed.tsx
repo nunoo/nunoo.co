@@ -30,9 +30,10 @@ interface PhotoFeed {
 interface PhotoFeedProps {
   refreshTrigger?: number;
   onError?: (error: string) => void;
+  isAdmin?: boolean;
 }
 
-export function PhotoFeed({ refreshTrigger, onError }: PhotoFeedProps) {
+export function PhotoFeed({ refreshTrigger, onError, isAdmin = false }: PhotoFeedProps) {
   const [feed, setFeed] = useState<PhotoFeed | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -196,7 +197,7 @@ export function PhotoFeed({ refreshTrigger, onError }: PhotoFeedProps) {
 
       <div className='grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3'>
         {feed.photos.map((photo) => (
-          <PhotoCard key={photo.id} photo={photo} onDelete={deletePhoto} />
+          <PhotoCard key={photo.id} photo={photo} onDelete={deletePhoto} showDeleteButton={isAdmin} />
         ))}
       </div>
 
@@ -224,9 +225,10 @@ export function PhotoFeed({ refreshTrigger, onError }: PhotoFeedProps) {
 interface PhotoCardProps {
   photo: Photo;
   onDelete: (photoId: string) => void;
+  showDeleteButton?: boolean;
 }
 
-function PhotoCard({ photo, onDelete }: PhotoCardProps) {
+function PhotoCard({ photo, onDelete, showDeleteButton = false }: PhotoCardProps) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
@@ -251,8 +253,9 @@ function PhotoCard({ photo, onDelete }: PhotoCardProps) {
           sizes='(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw'
         />
 
-        <div className='absolute right-2 top-2 opacity-0 transition-opacity group-hover:opacity-100'>
-          {!showDeleteConfirm ? (
+        {showDeleteButton && (
+          <div className='absolute right-2 top-2 opacity-0 transition-opacity group-hover:opacity-100'>
+            {!showDeleteConfirm ? (
             <button
               onClick={() => setShowDeleteConfirm(true)}
               className='rounded-full bg-black/50 p-2 text-white transition-colors hover:bg-black/70'
@@ -311,9 +314,10 @@ function PhotoCard({ photo, onDelete }: PhotoCardProps) {
                   />
                 </svg>
               </button>
-            </div>
-          )}
-        </div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       <div className='p-4'>

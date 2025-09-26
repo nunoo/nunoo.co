@@ -33,3 +33,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+
+backend/server
+create-admin.sh
+
+setup-admin
+setup-admin.go

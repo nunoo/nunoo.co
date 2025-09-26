@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
+import { COOKIE_ACCESS } from '@/lib/auth';
 
 const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:8080';
 
@@ -49,10 +51,21 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
+    // Get the access token from cookies
+    const cookieStore = cookies();
+    const accessToken = cookieStore.get(COOKIE_ACCESS)?.value;
+
+    if (!accessToken) {
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
     const response = await fetch(`${BACKEND_URL}/photos/?id=${id}`, {
       method: 'DELETE',
       headers: {
-        Cookie: request.headers.get('cookie') || '',
+        'Authorization': `Bearer ${accessToken}`,
       },
     });
 
