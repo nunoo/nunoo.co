@@ -138,7 +138,9 @@ function MobileNavigation(
                 <MobileNavItem href='/'>Home</MobileNavItem>
                 {/* <MobileNavItem href='/about'>About</MobileNavItem> */}
                 <MobileNavItem href='/photos'>Photos</MobileNavItem>
-                {user && <MobileNavItem href='/admin/photos'>Admin</MobileNavItem>}
+                {user && (
+                  <MobileNavItem href='/admin/photos'>Admin</MobileNavItem>
+                )}
                 {/* <MobileNavItem href="/articles">Articles</MobileNavItem> */}
                 {/* <MobileNavItem href="/projects">Projects</MobileNavItem> */}
                 {/* <MobileNavItem href="/speaking">Speaking</MobileNavItem>
