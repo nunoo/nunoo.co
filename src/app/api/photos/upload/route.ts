@@ -57,36 +57,14 @@ export async function POST(request: NextRequest) {
     }
 
     // Create unique filename
-    const fileExt = file.name.split('.').pop();
+    const fileExt = file.name.split('.').pop()?.toLowerCase();
     const fileName = `${user.id}/${Date.now()}-${Math.random()
       .toString(36)
       .substring(7)}.${fileExt}`;
 
-    // Upload to Supabase Storage
-    const { error: uploadError } = await supabase.storage
-      .from('photos')
-      .upload(fileName, file, {
-        cacheControl: '3600',
-        upsert: false,
-      });
-
-    if (uploadError) {
-      console.error('Upload error:', uploadError);
-      return NextResponse.json(
-        { error: 'Failed to upload photo' },
-        { status: 500 }
-      );
-    }
-
-    // Get public URL
-    const {
-      data: { publicUrl },
-    } = supabase.storage.from('photos').getPublicUrl(fileName);
-
-    // Get mime type - fallback to extension-based detection for mobile
-    let mimeType = file.type;
-    if (!mimeType || mimeType === '') {
-      const ext = fileExt?.toLowerCase();
+    // Get mime type early for upload - fallback to extension-based detection
+    let uploadMimeType = file.type;
+    if (!uploadMimeType || uploadMimeType === '') {
       const mimeMap: { [key: string]: string } = {
         jpg: 'image/jpeg',
         jpeg: 'image/jpeg',
@@ -99,8 +77,39 @@ export async function POST(request: NextRequest) {
         tif: 'image/tiff',
         bmp: 'image/bmp',
       };
-      mimeType = mimeMap[ext || ''] || 'application/octet-stream';
+      uploadMimeType = mimeMap[fileExt || ''] || 'application/octet-stream';
     }
+
+    // Convert File to Buffer for Supabase upload (fixes mobile issues)
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+
+    // Upload to Supabase Storage
+    const { error: uploadError } = await supabase.storage
+      .from('photos')
+      .upload(fileName, buffer, {
+        contentType: uploadMimeType,
+        cacheControl: '3600',
+        upsert: false,
+      });
+
+    if (uploadError) {
+      console.error('Upload error details:', {
+        error: uploadError,
+        fileName,
+        fileSize: file.size,
+        mimeType: uploadMimeType,
+      });
+      return NextResponse.json(
+        { error: `Upload failed: ${uploadError.message || 'Unknown error'}` },
+        { status: 500 }
+      );
+    }
+
+    // Get public URL
+    const {
+      data: { publicUrl },
+    } = supabase.storage.from('photos').getPublicUrl(fileName);
 
     // Save photo metadata to database
     const photoData = {
@@ -110,7 +119,7 @@ export async function POST(request: NextRequest) {
       public_url: publicUrl,
       caption: caption,
       file_size: file.size,
-      mime_type: mimeType,
+      mime_type: uploadMimeType,
     };
 
     const { data: photo, error: dbError } = await supabase
