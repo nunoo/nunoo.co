@@ -2,8 +2,6 @@
 
 import { useState, useRef, useCallback, useEffect } from 'react';
 import Image from 'next/image';
-import imageCompression from 'browser-image-compression';
-import heic2any from 'heic2any';
 import { Button } from '@/components/Button';
 
 interface PhotoUploadProps {
@@ -33,8 +31,17 @@ export function PhotoUploadV2({
 
   // Industry standard: Convert HEIC/HEIF to JPEG
   const convertHeicToJpeg = async (file: File): Promise<Blob> => {
+    // Only run in browser
+    if (typeof window === 'undefined') {
+      throw new Error('HEIC conversion only available in browser');
+    }
+
     try {
       setProcessingStatus('Converting HEIC/HEIF image...');
+
+      // Dynamic import to prevent SSR issues
+      const heic2any = (await import('heic2any')).default;
+
       const blob = await heic2any({
         blob: file,
         toType: 'image/jpeg',
@@ -49,6 +56,11 @@ export function PhotoUploadV2({
 
   // Industry standard: Compress and optimize images client-side
   const processImage = async (file: File): Promise<File> => {
+    // Only run in browser
+    if (typeof window === 'undefined') {
+      return file;
+    }
+
     const fileExtension = file.name.toLowerCase().split('.').pop();
     const isHeic = fileExtension === 'heic' || fileExtension === 'heif';
 
@@ -76,6 +88,11 @@ export function PhotoUploadV2({
 
     try {
       setProcessingStatus('Optimizing image for upload...');
+
+      // Dynamic import to prevent SSR issues
+      const imageCompression = (await import('browser-image-compression'))
+        .default;
+
       const compressedFile = await imageCompression(processedFile, options);
 
       // Ensure the file has proper type metadata
