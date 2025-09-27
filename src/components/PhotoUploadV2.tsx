@@ -270,7 +270,6 @@ export function PhotoUploadV2({
             type='file'
             className='absolute inset-0 h-full w-full cursor-pointer opacity-0'
             accept='image/*,.heic,.heif'
-            capture='environment'
             onChange={handleFileInputChange}
           />
           <div className='space-y-4'>
