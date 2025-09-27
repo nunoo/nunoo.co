@@ -10,6 +10,8 @@ Personal site and portfolio for Shawn Nunoo. Frontend is a Next.js 14 App Router
 - Styling: Tailwind CSS + `@tailwindcss/typography`
 - Content: MDX (with `remark-gfm`) and code highlighting via `rehype-prism`
 - Theming: `next-themes` (light/dark)
+- Database: Supabase (PostgreSQL, Authentication, Storage)
+- Image Processing: `browser-image-compression`, `heic2any`
 - RSS: `/feed.xml` generated at runtime
 - Deployment: Netlify
 - Backend (optional): Go 1.23+, chi, Huma (OpenAPI/Swagger), Postgres or in-memory storage
@@ -80,9 +82,36 @@ Use Postgres by setting `DATABASE_URL` or configuring `backend/config/config.yam
 
 ## Deployment
 
-- Hosted on Netlify. Builds with `npm run build` and publishes the Next.js output (see `netlify.toml`).
-- Ensure `NEXT_PUBLIC_SITE_URL` is set in your Netlify environment so RSS links are correct.
-- Backend Docker: see `backend/README.md` for Docker Compose instructions.
+### Automated Deployment (GitHub Actions)
+
+The project uses GitHub Actions for automated deployment:
+
+**Frontend (Next.js)**:
+
+- Deploys to Netlify via GitHub Actions on pushes to `main`
+- Builds with Node.js 20 and `npm run build`
+- Publishes `.next` directory to Netlify
+- Requires `NETLIFY_SITE_ID` and `NETLIFY_AUTH_TOKEN` secrets
+
+**Backend (Go API)**:
+
+- Builds Docker images on pushes to `main`
+- Uses Go 1.25.1 for builds
+- Pushes to GitHub Container Registry (`ghcr.io`)
+- Tagged with branch name, SHA, and `latest` for main branch
+
+### Manual Deployment
+
+**Frontend**:
+
+- Ensure `NEXT_PUBLIC_SITE_URL` is set in your environment
+- Run `npm run build` and deploy `.next` directory
+- See `netlify.toml` for Netlify-specific configuration
+
+**Backend**:
+
+- See `backend/README.md` for Docker and manual deployment instructions
+- Production deployment currently uses Docker images from GHCR
 
 ## Links
 

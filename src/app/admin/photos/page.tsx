@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Container } from '@/components/Container';
 import { PageBackground } from '@/components/PageBackground';
-import { PhotoUpload } from '@/components/PhotoUpload';
+import { PhotoUploadV2 } from '@/components/PhotoUploadV2';
 import { PhotoFeed } from '@/components/PhotoFeed';
 import { useMe } from '@/lib/useMe';
 
@@ -173,7 +173,7 @@ export default function AdminPhotosPage() {
                   <h2 className='mb-8 text-2xl font-bold text-zinc-900 dark:text-zinc-100'>
                     Upload New Photo
                   </h2>
-                  <PhotoUpload
+                  <PhotoUploadV2
                     onUploadSuccess={handleUploadSuccess}
                     onUploadError={handleUploadError}
                   />
